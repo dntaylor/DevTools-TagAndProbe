@@ -2,7 +2,6 @@
 import os
 import sys
 import logging
-import argparse
 
 import ROOT
 ROOT.gROOT.SetBatch(True)
@@ -12,7 +11,7 @@ from DevTools.TagAndProbe.PassFailSimulFitter import PassFailSimulFitter
 logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 pdfDefinition = []
-with open('{0}/src/DevTools/TagAndProbe/data/pdfDefinitions.txt'.format(os.environ['CMSSW_BASE'])) as defFile :
+with open('{0}/src/DevTools/TagAndProbe/data/pdfDefinition.txt'.format(os.environ['CMSSW_BASE'])) as defFile :
     for line in defFile :
         line = line.strip()
         if len(line) == 0 or line[0] is '#' :
@@ -46,7 +45,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     fitter.setPdf(pdfDefinition)
 
     print '-'*40, 'Central value fit'
-    fitter.addDataFromTree(tdata, 'data', allProbeCondition, passingProbeCondition, weightVariable='1')
+    fitter.addDataFromTree(tdata, 'data', allProbeCondition, passingProbeCondition)
     res = fitter.fit('simPdf', 'data')
     effValue = res.floatParsFinal().find('efficiency')
     dataEff = effValue.getVal()
@@ -68,7 +67,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     resAlt.Write()
 
     print '-'*40, 'Fit with tag pt > 30 (vs. 25)'
-    fitter.addDataFromTree(tdata, 'dataTagPt30', allProbeCondition+['tag_Ele_pt>30'], passingProbeCondition, weightVariable='1')
+    fitter.addDataFromTree(tdata, 'dataTagPt30', allProbeCondition+['tag_Ele_pt>30'], passingProbeCondition)
     resTagPt30 = fitter.fit('simPdf', 'dataTagPt30')
     dataTagPt30Eff = resTagPt30.floatParsFinal().find('efficiency').getVal()
     resTagPt30.Write()
@@ -94,7 +93,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
             'EFF_MC_ERRSYM' : ((mcEffHi-mcEffLo)/2, res),
             }
     cutString = ''
-    for varName, value in sorted(variations.items()) :
+    for varName, value in variations.items() :
         (value, fitResult) = value
         cutString += '    if ( variation == Variation::%s && (%s) ) return %f;\n' % (varName, condition, value)
         print '  Variation {:>15s} : {:.4f}, edm={:f}, status={:s}'.format(varName, value, fitResult.edm(), statusInfo(fitResult))
@@ -106,11 +105,11 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     print
     ROOT.gDirectory.cd('..')
 
-def fit(name, allProbeCondition, passingProbeCondition, binningMap, macroVariables, tmc, tmcAlt, tdata):
+def fit(name, allProbeCondition, passingProbeCondition, binningMap, macroVariables):
     ROOT.gDirectory.mkdir(name).cd()
     ROOT.TNamed('variables', ', '.join(macroVariables)).Write()
     for binName, cut in sorted(binningMap.items()) :
-        fitBin(name+'_'+binName, allProbeCondition+cut, passingProbeCondition, tmc, tmcAlt, tdata)
+        fitBin(name+'_'+binName, allProbeCondition+cut, passingProbeCondition)
     ROOT.gDirectory.cd('..')
 
 def runfit(args):
