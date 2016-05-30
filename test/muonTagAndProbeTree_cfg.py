@@ -34,22 +34,23 @@ options['DEBUG']                   = cms.bool(False)
 from PhysicsTools.TagAndProbe.treeMakerOptions_cfi import *
 
 if (varOptions.isMC):
-    options['INPUT_FILE_NAME']     = '/store/mc/RunIIFall15MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/06532BBC-05C8-E511-A60A-F46D043B3CE5.root'
-    options['OUTPUT_FILE_NAME']    = "TnPTree_mc.root"
-    options['TnPPATHS']            = cms.vstring("HLT_IsoTkMu20_v*")
-    options['TnPHLTTagFilters']    = cms.vstring("hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09")
+    options['INPUT_FILE_NAME']     = '/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/00000/00F0B3DC-211B-E611-A6A0-001E67248A39.root'
+    options['OUTPUT_FILE_NAME']    = "TnPTree_mc_muon.root"
+    options['TnPPATHS']            = cms.vstring()#"HLT_IsoTkMu20_v*")
+    options['TnPHLTTagFilters']    = cms.vstring()#"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09")
     options['TnPHLTProbeFilters']  = cms.vstring()
-    options['HLTFILTERTOMEASURE']  = cms.vstring("")
-    options['GLOBALTAG']           = '76X_mcRun2_asymptotic_v12'
+    options['HLTFILTERTOMEASURE']  = cms.vstring()
+    options['GLOBALTAG']           = 'auto:run2_mc'
     options['EVENTSToPROCESS']     = cms.untracked.VEventRange()
 else:
-    options['INPUT_FILE_NAME']     = "/store/data/Run2015D/SingleMuon/MINIAOD/16Dec2015-v1/10000/00006301-CAA8-E511-AD39-549F35AD8BC9.root"
-    options['OUTPUT_FILE_NAME']    = "TnPTree_data.root"
+    options['INPUT_FILE_NAME']     = "/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/158/00000/02D9C19F-571A-E611-AD8E-02163E013732.root"
+    options['OUTPUT_FILE_NAME']    = "TnPTree_data_muon.root"
     options['TnPPATHS']            = ["HLT_IsoTkMu20_v*",]
-    options['TnPHLTTagFilters']    = ["hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09"]
+    options['TnPHLTTagFilters']    = ["hltL3fL1sMu18L1f0Tkf20QL3trkIsoFiltered0p09"]
+    #options['TnPHLTTagFilters']    = ["hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09"]
     options['TnPHLTProbeFilters']  = cms.vstring()
     options['HLTFILTERTOMEASURE']  = cms.vstring("")
-    options['GLOBALTAG']           = '76X_dataRun2_v15'
+    options['GLOBALTAG']           = 'auto:run2_data'
     options['EVENTSToPROCESS']     = cms.untracked.VEventRange()
 
 ###################################################################
@@ -60,7 +61,10 @@ from PhysicsTools.TagAndProbe.treeContent_cfi import *
 process.load("Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff")
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag.globaltag = options['GLOBALTAG']
+
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, options['GLOBALTAG'], '')
+
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
