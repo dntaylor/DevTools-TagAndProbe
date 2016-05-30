@@ -31,7 +31,7 @@ from PhysicsTools.TagAndProbe.treeMakerOptions_cfi import *
 
 if (varOptions.isMC):
     options['INPUT_FILE_NAME']     = '/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/00000/00F0B3DC-211B-E611-A6A0-001E67248A39.root'
-    options['OUTPUT_FILE_NAME']    = "TnPTree_mc_muon.root"
+    options['OUTPUT_FILE_NAME']    = "TnPTree_mc_singleMuon.root"
     options['TnPPATHS']            = cms.vstring()#"HLT_IsoTkMu20_v*")
     options['TnPHLTTagFilters']    = cms.vstring()#"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09")
     options['TnPHLTProbeFilters']  = cms.vstring()
@@ -39,11 +39,10 @@ if (varOptions.isMC):
     options['GLOBALTAG']           = 'auto:run2_mc'
     options['EVENTSToPROCESS']     = cms.untracked.VEventRange()
 else:
-    options['INPUT_FILE_NAME']     = "/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/158/00000/02D9C19F-571A-E611-AD8E-02163E013732.root"
-    options['OUTPUT_FILE_NAME']    = "TnPTree_data_muon.root"
-    options['TnPPATHS']            = ["HLT_IsoTkMu20_v*",]
-    options['TnPHLTTagFilters']    = ["hltL3fL1sMu18L1f0Tkf20QL3trkIsoFiltered0p09"]
-    #options['TnPHLTTagFilters']    = ["hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09"]
+    options['INPUT_FILE_NAME']     = "/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/158/00000/06A9DFDA-201A-E611-858F-02163E0136F7.root"
+    options['OUTPUT_FILE_NAME']    = "TnPTree_data_singleMuon.root"
+    options['TnPPATHS']            = ["HLT_PFMET170_HBHECleaned_v*",]
+    options['TnPHLTTagFilters']    = []
     options['TnPHLTProbeFilters']  = cms.vstring()
     options['HLTFILTERTOMEASURE']  = cms.vstring("")
     options['GLOBALTAG']           = 'auto:run2_data'
@@ -141,6 +140,14 @@ process.probeTriggerSeq += process.probeTriggersMu8Leg
 process.probeTriggersTkMu8Leg = process.probeTriggersMu17Leg.clone()
 process.probeTriggersTkMu8Leg.filterNames = cms.vstring("hltDiMuonGlb17Trk8RelTrkIsoFiltered0p4", "hltDiMuonGlbFiltered17TrkFiltered8")
 process.probeTriggerSeq += process.probeTriggersTkMu8Leg
+
+process.probeTriggersIsoMu20 = process.probeTriggersMu17Leg.clone()
+process.probeTriggersIsoMu20.filterNames = cms.vstring("hltL3crIsoL1sMu18L1f0L2f10QL3f20QL3trkIsoFiltered0p09","hltL3fL1sMu18L1f0L2f10QL3Filtered20Q")
+process.probeTriggerSeq += process.probeTriggersIsoMu20
+
+process.probeTriggersIsoTkMu20 = process.probeTriggersMu17Leg.clone()
+process.probeTriggersIsoTkMu20.filterNames = cms.vstring("hltL3fL1sMu18L1f0Tkf20QL3trkIsoFiltered0p09","hltL3fL1sMu18f0TkFiltered20Q")
+process.probeTriggerSeq += process.probeTriggersIsoTkMu20
 
 ###################################################################
 ## TnP PAIRS
@@ -288,6 +295,8 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         #passingMu17L1Match = cms.InputTag("probeTriggersMu17LegL1Mu12"),
         passingMu8= cms.InputTag("probeTriggersMu8Leg"),
         passingTkMu8 = cms.InputTag("probeTriggersTkMu8Leg"),
+        passingIsoMuo20 = cms.InputTag("probeTriggersIsoMu20"),
+        passingIsoTkMu20 = cms.InputTag("probeTriggersIsoTkMu20"),
     ),
     allProbes     = cms.InputTag("probeMuons"),
     )
