@@ -115,6 +115,37 @@ process.probeMuons = cms.EDFilter("PATMuonRefSelector",
     cut = cms.string(options['MUON_CUTS']), 
 )
 
+######################
+### Trigger Probes ###
+######################
+process.probeTriggerSeq = cms.Sequence()
+
+process.probeTriggersMu17Leg = cms.EDProducer("PatMuonTriggerCandProducer",
+    filterNames = cms.vstring("hltDiMuonGlb17Glb8RelTrkIsoFiltered0p4", "hltL3fL1sDoubleMu114L1f0L2f10OneMuL3Filtered17"),
+    inputs      = cms.InputTag("probeMuons"),
+    bits        = cms.InputTag('TriggerResults::HLT'),
+    objects     = cms.InputTag('selectedPatTrigger'),
+    dR          = cms.double(0.5),
+    isAND       = cms.bool(True)
+    )
+process.probeTriggerSeq += process.probeTriggersMu17Leg
+
+#process.probeTriggersMu17LegL1Mu12 = cms.EDProducer("L1MuonMatcher",
+#        inputs = cms.InputTag("probeTriggersMu17Leg"),
+#        l1extraMuons = cms.InputTag("l1extraParticles"),
+#        minET = cms.double(12.),
+#        dRmatch = cms.double(.5)
+#        )
+#process.probeTriggerSeq += process.probeTriggersMu17LegL1Mu12
+
+process.probeTriggersMu8Leg = process.probeTriggersMu17Leg.clone()
+process.probeTriggersMu8Leg.filterNames = cms.vstring("hltDiMuonGlb17Glb8RelTrkIsoFiltered0p4", "hltL3pfL1sDoubleMu114L1f0L2pf0L3PreFiltered8")
+process.probeTriggerSeq += process.probeTriggersMu8Leg
+
+process.probeTriggersTkMu8Leg = process.probeTriggersMu17Leg.clone()
+process.probeTriggersTkMu8Leg.filterNames = cms.vstring("hltDiMuonGlb17Trk8RelTrkIsoFiltered0p4", "hltDiMuonGlbFiltered17TrkFiltered8")
+process.probeTriggerSeq += process.probeTriggersTkMu8Leg
+
 ###################################################################
 ## TnP PAIRS
 ###################################################################
@@ -259,6 +290,10 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         passingTight  = cms.string("userInt('isTightMuon')==1"), 
         passingIsoLoose = cms.string(isolationDef+" < 0.4"),
         passingIsoTight = cms.string(isolationDef+" < 0.12"),
+        passingMu17 = cms.InputTag("probeTriggersMu17Leg"),
+        #passingMu17L1Match = cms.InputTag("probeTriggersMu17LegL1Mu12"),
+        passingMu8= cms.InputTag("probeTriggersMu8Leg"),
+        passingTkMu8 = cms.InputTag("probeTriggersTkMu8Leg"),
     ),
     allProbes     = cms.InputTag("probeMuons"),
     )
@@ -284,7 +319,7 @@ if varOptions.isMC :
 process.p = cms.Path(
     process.idEmbedSequence *
     (process.tagMuons + process.probeMuons) *
-    (process.tagMuonsTriggerMatched) *
+    (process.tagMuonsTriggerMatched + process.probeTriggerSeq) *
     process.tpPairSeq *
     process.muonEffs
     )
