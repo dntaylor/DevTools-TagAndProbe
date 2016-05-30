@@ -26,8 +26,8 @@ options['SUPERCLUSTER_COLL']       = "reducedEgamma:reducedSuperClusters"
 options['SUPERCLUSTER_CUTS']       = "abs(eta)<2.5 && !(1.4442< abs(eta) <1.566) && et>10.0"
 options['MAXEVENTS']               = cms.untracked.int32(-1) 
 options['useAOD']                  = cms.bool(False)
-options['DOTRIGGER']               = cms.bool(False)
-options['DORECO']                  = cms.bool(False)
+options['DOTRIGGER']               = cms.bool(True)
+options['DORECO']                  = cms.bool(True)
 options['DOID']                    = cms.bool(True)
 options['OUTPUTEDMFILENAME']       = 'edmFile.root'
 options['DEBUG']                   = cms.bool(False)
@@ -97,6 +97,51 @@ process.maxEvents = cms.untracked.PSet( input = options['MAXEVENTS'])
 from PhysicsTools.TagAndProbe.electronIDModules_cfi import *
 setIDs(process, options)
 
+
+###############
+### Trigger ###
+###############
+process.goodElectronsMeasureHLT = cms.Sequence()
+
+process.goodElectronsMeasureHLTEle23 = cms.EDProducer("PatElectronTriggerCandProducer",
+                                                filterNames = cms.vstring("hltEle23CaloIdLTrackIdLIsoVLTrackIsoFilter"),
+                                                inputs      = cms.InputTag("goodElectronsProbeMeasureHLT"),
+                                                bits        = cms.InputTag('TriggerResults::HLT'),
+                                                objects     = cms.InputTag('selectedPatTrigger'),
+                                                dR          = cms.double(0.3),
+                                                isAND       = cms.bool(False)
+                                                )
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle23
+
+process.goodElectronsMeasureHLTEle17 = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTEle17.filterNames = cms.vstring("hltEle17CaloIdLTrackIdLIsoVLTrackIsoFilter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle17
+
+process.goodElectronsMeasureHLTEle12 = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTEle12.filterNames = cms.vstring("hltEle12CaloIdLTrackIdLIsoVLTrackIsoFilter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle12
+
+process.goodElectronsMeasureHLTEle17Ele12Leg1 = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTEle17Ele12Leg1.filterNames = cms.vstring("hltEle17Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle17Ele12Leg1
+
+#process.goodElectronsMeasureHLTEle17Ele12Leg1L1EG15 = cms.EDProducer("PatElectronL1CandProducer",
+#        inputs = cms.InputTag("goodElectronsMeasureHLTEle17Ele12Leg1"),
+#        isoObjects = cms.InputTag("l1extraParticles:Isolated"),
+#        nonIsoObjects = cms.InputTag("l1extraParticles:NonIsolated"),
+#        minET = cms.double(15.),
+#        dRmatch = cms.double(.5)
+#        )
+#process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle17Ele12Leg1L1EG15
+
+process.goodElectronsMeasureHLTEle17Ele12Leg2 = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTEle17Ele12Leg2.filterNames = cms.vstring("hltEle17Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle17Ele12Leg2
+
+process.goodElectronsMeasureHLTMu17Ele12ELeg = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTMu17Ele12ELeg.filterNames = cms.vstring("hltMu17TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu17Ele12ELeg
+
 ###################################################################
 ## SEQUENCES
 ###################################################################
@@ -153,11 +198,32 @@ if (not varOptions.isMC):
         isMC = cms.bool(False)
         )
 
+# remove sc stuff that is broken
+del CommonStuffForGsfElectronProbe.variables.probe_sc_energy
+del CommonStuffForGsfElectronProbe.variables.probe_sc_et
+del CommonStuffForGsfElectronProbe.variables.probe_sc_eta
+del CommonStuffForGsfElectronProbe.variables.probe_sc_abseta
+del CommonStuffForGsfElectronProbe.tagVariables.sc_energy
+del CommonStuffForGsfElectronProbe.tagVariables.sc_et
+del CommonStuffForGsfElectronProbe.tagVariables.sc_eta
+del CommonStuffForGsfElectronProbe.tagVariables.sc_abseta
+del CommonStuffForSuperClusterProbe.tagVariables.sc_energy
+del CommonStuffForSuperClusterProbe.tagVariables.sc_et
+del CommonStuffForSuperClusterProbe.tagVariables.sc_eta
+del CommonStuffForSuperClusterProbe.tagVariables.sc_abseta
+
 process.GsfElectronToTrigger = cms.EDAnalyzer("TagProbeFitTreeProducer",
                                               CommonStuffForSuperClusterProbe, mcTruthCommonStuff,
                                               tagProbePairs = cms.InputTag("tagTightHLT"),
                                               arbitration   = cms.string("Random2"),
-                                              flags         = cms.PSet(passingHLT    = cms.InputTag("goodElectronsMeasureHLT")
+                                              flags         = cms.PSet(
+                                                  passingHLTEle23    = cms.InputTag("goodElectronsMeasureHLTEle23"),
+                                                  passingHLTEle17    = cms.InputTag("goodElectronsMeasureHLTEle17"),
+                                                  passingHLTEle12    = cms.InputTag("goodElectronsMeasureHLTEle12"),
+                                                  passingHLTEle17Ele12Leg1    = cms.InputTag("goodElectronsMeasureHLTEle17Ele12Leg1"),
+                                                  #passingHLTEle17Ele12Leg1L1Match    = cms.InputTag("goodElectronsMeasureHLTEle17Ele12Leg1L1EG15"),
+                                                  passingHLTEle17Ele12Leg2    = cms.InputTag("goodElectronsMeasureHLTEle17Ele12Leg2"),
+                                                  passingHLTMu17Ele12ELeg     = cms.InputTag("goodElectronsMeasureHLTMu17Ele12ELeg"),
                                                                        ),                                               
                                               allProbes     = cms.InputTag("goodElectronsProbeMeasureHLT"),
                                               )
@@ -180,16 +246,6 @@ if (varOptions.isMC):
     #process.GsfElectronToSC.probeMatches  = cms.InputTag("McMatchSC")
     process.GsfElectronToSC.eventWeight   = cms.InputTag("generator")
     process.GsfElectronToSC.PUWeightSrc   = cms.InputTag("pileupReweightingProducer","pileupWeights")
-
-# remove sc stuff that is broken
-del CommonStuffForGsfElectronProbe.variables.probe_sc_energy
-del CommonStuffForGsfElectronProbe.variables.probe_sc_et
-del CommonStuffForGsfElectronProbe.variables.probe_sc_eta
-del CommonStuffForGsfElectronProbe.variables.probe_sc_abseta
-del CommonStuffForGsfElectronProbe.tagVariables.sc_energy
-del CommonStuffForGsfElectronProbe.tagVariables.sc_et
-del CommonStuffForGsfElectronProbe.tagVariables.sc_eta
-del CommonStuffForGsfElectronProbe.tagVariables.sc_abseta
 
 process.GsfElectronToRECO = cms.EDAnalyzer("TagProbeFitTreeProducer",
                                            mcTruthCommonStuff, CommonStuffForGsfElectronProbe,
