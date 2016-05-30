@@ -17,10 +17,11 @@ varOptions.register(
 
 varOptions.parseArguments()
 
+options['isMC']                    = varOptions.isMC
 options['HLTProcessName']          = "HLT"
 options['ELECTRON_COLL']           = "slimmedElectrons"
-options['ELECTRON_CUTS']           = "(abs(superCluster.eta)<2.5) && (ecalEnergy*sin(superClusterPosition.theta)>10.0)"
-options['ELECTRON_TAG_CUTS']       = "(abs(superCluster.eta)<=2.5) && !(1.4442<=abs(superCluster.eta)<=1.566) && pt >= 25.0"
+options['ELECTRON_CUTS']           = "(abs(eta)<2.5)"
+options['ELECTRON_TAG_CUTS']       = "(abs(eta)<=2.5) && !(1.4442<=abs(eta)<=1.566) && pt >= 25.0"
 options['SUPERCLUSTER_COLL']       = "reducedEgamma:reducedSuperClusters"
 options['SUPERCLUSTER_CUTS']       = "abs(eta)<2.5 && !(1.4442< abs(eta) <1.566) && et>10.0"
 options['MAXEVENTS']               = cms.untracked.int32(-1) 
@@ -34,22 +35,22 @@ options['DEBUG']                   = cms.bool(False)
 from PhysicsTools.TagAndProbe.treeMakerOptions_cfi import *
 
 if (varOptions.isMC):
-    options['INPUT_FILE_NAME']     = '/store/mc/RunIIFall15MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PU25nsData2015v1_76X_mcRun2_asymptotic_v12-v1/00000/06532BBC-05C8-E511-A60A-F46D043B3CE5.root'
-    options['OUTPUT_FILE_NAME']    = "TnPTree_mc_muon.root"
-    options['TnPPATHS']            = cms.vstring("HLT_Ele23_WPLoose_Gsf_v*")
-    options['TnPHLTTagFilters']    = cms.vstring("hltEle23WPLooseGsfTrackIsoFilter")
+    options['INPUT_FILE_NAME']     = '/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/00000/00F0B3DC-211B-E611-A6A0-001E67248A39.root'
+    options['OUTPUT_FILE_NAME']    = "TnPTree_mc_electron.root"
+    options['TnPPATHS']            = cms.vstring()#"HLT_Ele23_WPLoose_Gsf_v*")
+    options['TnPHLTTagFilters']    = cms.vstring()#"hltEle23WPLooseGsfTrackIsoFilter")
     options['TnPHLTProbeFilters']  = cms.vstring()
-    options['HLTFILTERTOMEASURE']  = cms.vstring("")
-    options['GLOBALTAG']           = '76X_mcRun2_asymptotic_v12'
+    options['HLTFILTERTOMEASURE']  = cms.vstring()
+    options['GLOBALTAG']           = 'auto:run2_mc'
     options['EVENTSToPROCESS']     = cms.untracked.VEventRange()
 else:
-    options['INPUT_FILE_NAME']     = "/store/data/Run2015D/SingleElectron/MINIAOD/16Dec2015-v1/20000/FC4F7BEE-FCA6-E511-A99F-0CC47A4D7686.root"
-    options['OUTPUT_FILE_NAME']    = "TnPTree_data_muon.root"
+    options['INPUT_FILE_NAME']     = "/store/data/Run2016B/SingleElectron/MINIAOD/PromptReco-v2/000/273/158/00000/06277EC1-181A-E611-870F-02163E0145E5.root"
+    options['OUTPUT_FILE_NAME']    = "TnPTree_data_electron.root"
     options['TnPPATHS']            = ["HLT_Ele23_WPLoose_Gsf_v*",]
     options['TnPHLTTagFilters']    = ["hltEle23WPLooseGsfTrackIsoFilter"]
     options['TnPHLTProbeFilters']  = cms.vstring()
     options['HLTFILTERTOMEASURE']  = cms.vstring("")
-    options['GLOBALTAG']           = '76X_dataRun2_v15'
+    options['GLOBALTAG']           = 'auto:run2_data'
     options['EVENTSToPROCESS']     = cms.untracked.VEventRange()
 
 ###################################################################
@@ -57,20 +58,23 @@ else:
 setModules(process, options)
 
 # manually fix pileup
-from SimGeneral.MixingModule.mix_2015_25ns_FallMC_matchData_PoissonOOTPU_cfi import mix
+from SimGeneral.MixingModule.mix_2016_25ns_SpringMC_PUScenarioV1_PoissonOOTPU_cfi import mix
 pu_distribs = { "mc" : mix.input.nbPileupEvents.probValue }
 
-data_pu_distribs = { "Jamboree_golden_JSON" : [5.12e+04,3.66e+05,5.04e+05,4.99e+05,7.5e+05,1.1e+06,2.53e+06,9.84e+06,4.4e+07,1.14e+08,1.94e+08,2.63e+08,2.96e+08,2.74e+08,2.06e+08,1.26e+08,6.38e+07,2.73e+07,1.1e+07,5.2e+06,3.12e+06,1.87e+06,9.35e+05,3.64e+05,1.1e+05,2.64e+04,5.76e+03,1.53e+03,594,278,131,59.8,26,10.8,4.29,1.62,0.587,0.203,0.0669,0.0211,0.00633,0.00182,0.000498,0.00013,3.26e-05,7.77e-06,1.77e-06,3.85e-07,7.99e-08,1.58e-08,3e-09,5.43e-10] }
+data_pu_distribs = { "golden_v2" : [2.2566754964100775, 1950.7101413328778, 17511.456675455047, 27074.20916127319, 31295.38904638094, 53522.20431560162, 35220.460642050515, 90928.4505886674, 158090.51550539696, 244779.69121570754, 475446.24468129413, 1032094.7569565654, 2867278.6011298, 8427431.69028668, 17066351.233420365, 24027307.400081296, 28582023.0191919, 31161312.562541533, 29834230.38765881, 24016276.70437407, 16773532.053158931, 10934908.81338181, 6882987.985089145, 4078652.637076056, 2188705.6729904166, 1038844.4766897545, 433153.3500083798, 160781.35010697396, 56761.72710812498, 23088.051876630037, 13703.115979318482, 11160.425830582903, 10107.562092362476, 9265.663899467123, 8452.643876626442, 7708.148529163162, 7083.028042403028, 6599.59737809236, 6251.554972113813, 6013.330098038255, 5850.7412552672895, 5728.700884743008, 5612.778750900018, 5486.076394019967, 5335.204681008237, 5152.708506844515, 4936.573628932316, 4688.59937381231, 4413.05262576535, 4115.649709073904, 3802.8200587118135, 3481.1800882296766, 3157.154600542835, 2836.702560279824, 2525.1215607577033, 2226.9167983369393, 1945.7261608204267, 1684.2949902672606, 1444.4940213184038, 1227.3732210270105, 1033.2435191116354, 861.7780761805193, 712.1249032724896, 583.0232918504774, 472.9175407256343, 380.0627464092443, 302.61882216537015, 238.730305964887, 186.5908075849736, 144.49205632995265, 110.85839804233966, 84.26823511318716, 63.464311178194166, 47.35493604185581, 35.00826099036062, 25.641591111449614, 18.607501788495206, 13.378250655929659, 9.529677972026128, 6.725494537916399] }
 
 process.pileupReweightingProducer.pileupMC = cms.vdouble(pu_distribs['mc'])
-process.pileupReweightingProducer.PileupData = cms.vdouble(data_pu_distribs["Jamboree_golden_JSON"])
+process.pileupReweightingProducer.PileupData = cms.vdouble(data_pu_distribs["golden_v2"])
 
 from PhysicsTools.TagAndProbe.treeContent_cfi import *
 
 process.load("Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff")
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
-process.GlobalTag.globaltag = options['GLOBALTAG']
+
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, options['GLOBALTAG'], '')
+
 
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
@@ -176,6 +180,16 @@ if (varOptions.isMC):
     #process.GsfElectronToSC.probeMatches  = cms.InputTag("McMatchSC")
     process.GsfElectronToSC.eventWeight   = cms.InputTag("generator")
     process.GsfElectronToSC.PUWeightSrc   = cms.InputTag("pileupReweightingProducer","pileupWeights")
+
+# remove sc stuff that is broken
+del CommonStuffForGsfElectronProbe.variables.probe_sc_energy
+del CommonStuffForGsfElectronProbe.variables.probe_sc_et
+del CommonStuffForGsfElectronProbe.variables.probe_sc_eta
+del CommonStuffForGsfElectronProbe.variables.probe_sc_abseta
+del CommonStuffForGsfElectronProbe.tagVariables.sc_energy
+del CommonStuffForGsfElectronProbe.tagVariables.sc_et
+del CommonStuffForGsfElectronProbe.tagVariables.sc_eta
+del CommonStuffForGsfElectronProbe.tagVariables.sc_abseta
 
 process.GsfElectronToRECO = cms.EDAnalyzer("TagProbeFitTreeProducer",
                                            mcTruthCommonStuff, CommonStuffForGsfElectronProbe,
