@@ -9,6 +9,8 @@ ROOT.gROOT.SetBatch(True)
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from DevTools.TagAndProbe.PassFailSimulFitter import PassFailSimulFitter
 
+from DevTools.Utilities.utilities import python_mkdir
+
 logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 pdfDefinition = []
@@ -100,7 +102,8 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
         print '  Variation {:>15s} : {:.4f}, edm={:f}, status={:s}'.format(varName, value, fitResult.edm(), statusInfo(fitResult))
         if 'STAT' not in varName and 'EFF' not in varName and fitResult.statusCodeHistory(0) < 0 :
             cBad = fitter.drawFitCanvas(fitResult)
-            cBad.Print('badFit_%s_%s.png' %(name, varName))
+            python_mkdir('fits/{0}'.format(name))
+            cBad.Print('fits/{0}/badFit_{0}_{1}.png'.format(name, varName))
 
     ROOT.TNamed('cutString', cutString).Write()
     print
