@@ -2,6 +2,7 @@
 import os
 import sys
 import logging
+import argparse
 
 import ROOT
 ROOT.gROOT.SetBatch(True)
@@ -11,7 +12,7 @@ from DevTools.TagAndProbe.PassFailSimulFitter import PassFailSimulFitter
 logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 pdfDefinition = []
-with open('{0}/src/DevTools/TagAndProbe/data/pdfDefinition.txt'.format(os.environ['CMSSW_BASE'])) as defFile :
+with open('{0}/src/DevTools/TagAndProbe/data/pdfDefinitions.txt'.format(os.environ['CMSSW_BASE'])) as defFile :
     for line in defFile :
         line = line.strip()
         if len(line) == 0 or line[0] is '#' :
@@ -27,6 +28,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     fitVariable.setBins(60)
 
     mcTruthCondition = ['mcTrue']
+    mcTruthCondition = []
 
     ROOT.gDirectory.mkdir(name).cd()
     fitter = PassFailSimulFitter(name, fitVariable)
@@ -99,17 +101,17 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
         print '  Variation {:>15s} : {:.4f}, edm={:f}, status={:s}'.format(varName, value, fitResult.edm(), statusInfo(fitResult))
         if 'STAT' not in varName and 'EFF' not in varName and fitResult.statusCodeHistory(0) < 0 :
             cBad = fitter.drawFitCanvas(fitResult)
-            cBad.Print('badFit_%s_%s.png' %(name, varName))
+            cBad.Print('fits/{0}/badFit_{0}_{2}.png'.format(name, varName))
 
     ROOT.TNamed('cutString', cutString).Write()
     print
     ROOT.gDirectory.cd('..')
 
-def fit(name, allProbeCondition, passingProbeCondition, binningMap, macroVariables):
+def fit(name, allProbeCondition, passingProbeCondition, binningMap, macroVariables, tmc=None, tmcAlt=None, tdata=None):
     ROOT.gDirectory.mkdir(name).cd()
     ROOT.TNamed('variables', ', '.join(macroVariables)).Write()
     for binName, cut in sorted(binningMap.items()) :
-        fitBin(name+'_'+binName, allProbeCondition+cut, passingProbeCondition)
+        fitBin(name+'_'+binName, allProbeCondition+cut, passingProbeCondition, tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
     ROOT.gDirectory.cd('..')
 
 def runfit(args):
@@ -119,7 +121,7 @@ def runfit(args):
     # trees for mc, mc lo (for systematics), and data
     treeNameMap = {
         'electron' : 'GsfElectronToRECO/fitter_tree',
-        'muon'     : '',
+        'muon'     : 'muonEffs/fitter_tree',
     }
 
     fmc = ROOT.TFile.Open(args.mcFileName)
@@ -144,12 +146,12 @@ def runfit(args):
 
     ptVar = {
         'electron' : 'probe_Ele_pt',
-        'muon'     : 'probe_Mu_pt',
+        'muon'     : 'probe_pt',
     }
 
     etaVar = {
         'electron' : 'probe_Ele_abseta',
-        'muon'     : 'probe_Mu_abseta',
+        'muon'     : 'probe_abseta',
     }
 
     binning = {}
@@ -171,10 +173,14 @@ def runfit(args):
     fout = ROOT.TFile('fits.root', 'recreate')
     fout.mkdir('{0}Fits'.format(args.object)).cd()
 
-    fit('CutBasedIDVeto',   [], 'passingVeto',   binning, commonVars+['bool passingVeto'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-    fit('CutBasedIDLoose',  [], 'passingLoose',  binning, commonVars+['bool passingLoose'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-    fit('CutBasedIDMedium', [], 'passingMedium', binning, commonVars+['bool passingMedium'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-    fit('CutBasedIDTight',  [], 'passingTight',  binning, commonVars+['bool passingTight'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+    if args.object=='electron':
+        fit('CutBasedIDVeto',   [], 'passingVeto',   binning, commonVars+['bool passingVeto'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('CutBasedIDLoose',  [], 'passingLoose',  binning, commonVars+['bool passingLoose'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('CutBasedIDMedium', [], 'passingMedium', binning, commonVars+['bool passingMedium'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('CutBasedIDTight',  [], 'passingTight',  binning, commonVars+['bool passingTight'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+    if args.object=='muon':
+        fit('MediumID',   [], 'passingMedium',   binning, commonVars+['bool passingMedium'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('TightID',   [], 'passingTight',   binning, commonVars+['bool passingTight'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
 
 
 def parse_command_line(argv):

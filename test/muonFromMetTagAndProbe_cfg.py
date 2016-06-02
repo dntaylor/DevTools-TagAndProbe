@@ -31,17 +31,19 @@ options['DEBUG']                   = cms.bool(False)
 if (varOptions.isMC):
     options['INPUT_FILE_NAME']     = '/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/00000/00F0B3DC-211B-E611-A6A0-001E67248A39.root'
     options['OUTPUT_FILE_NAME']    = "TnPTree_mc_singleMuon.root"
-    options['TnPPATHS']            = cms.vstring()#"HLT_IsoTkMu20_v*")
-    options['TnPHLTTagFilters']    = cms.vstring()#"hltL3crIsoL1sMu16L1f0L2f10QL3f20QL3trkIsoFiltered0p09")
+    options['TnPPATHS']            = cms.vstring()
+    options['TnPHLTTagFilters']    = cms.vstring()
     options['TnPHLTProbeFilters']  = cms.vstring()
     options['HLTFILTERTOMEASURE']  = cms.vstring()
     options['GLOBALTAG']           = 'auto:run2_mc'
     options['EVENTSToPROCESS']     = cms.untracked.VEventRange()
 else:
+    #options['INPUT_FILE_NAME']     = "/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/158/00000/02D9C19F-571A-E611-AD8E-02163E013732.root"
     options['INPUT_FILE_NAME']     = "/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/158/00000/06A9DFDA-201A-E611-858F-02163E0136F7.root"
     options['OUTPUT_FILE_NAME']    = "TnPTree_data_singleMuon.root"
     options['TnPPATHS']            = ["HLT_PFMET170_HBHECleaned_v*","HLT_MET200_v*"]
-    options['TnPHLTTagFilters']    = []
+    #options['TnPPATHS']            = ["HLT_IsoTkMu20_v*",]
+    #options['TnPHLTTagFilters']    = ["hltL3fL1sMu18L1f0Tkf20QL3trkIsoFiltered0p09"]
     options['TnPHLTProbeFilters']  = cms.vstring()
     options['HLTFILTERTOMEASURE']  = cms.vstring("")
     options['GLOBALTAG']           = 'auto:run2_data'
@@ -128,7 +130,7 @@ process.probeTriggersMu17Leg = cms.EDProducer("PatMuonTriggerCandProducer",
     inputs      = cms.InputTag("probeMuons"),
     bits        = cms.InputTag('TriggerResults::HLT'),
     objects     = cms.InputTag('selectedPatTrigger'),
-    dR          = cms.double(0.5),
+    dR          = cms.double(0.1),
     isAND       = cms.bool(True)
     )
 process.probeTriggerSeq += process.probeTriggersMu17Leg
