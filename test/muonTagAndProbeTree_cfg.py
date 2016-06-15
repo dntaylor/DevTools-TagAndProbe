@@ -17,8 +17,8 @@ varOptions.register(
 
 varOptions.parseArguments()
 
-#isolationDef = "(chargedHadronIso+max(photonIso+neutralHadronIso-0.5*puChargedHadronIso,0.0))/pt"
 isolationDef = '(pfIsolationR04().sumChargedHadronPt + max(0., pfIsolationR04().sumNeutralHadronEt + pfIsolationR04().sumPhotonEt - 0.5*pfIsolationR04().sumPUPt))/pt()'
+trackIsoDef = 'trackIso()/pt()'
 options['HLTProcessName']          = "HLT"
 options['MUON_COLL']               = "slimmedMuons"
 options['MUON_CUTS']               = "((isTrackerMuon || isGlobalMuon) && abs(eta)<2.4 && pt>5)"
@@ -76,16 +76,23 @@ process.source = cms.Source("PoolSource",
 
 process.maxEvents = cms.untracked.PSet( input = options['MAXEVENTS'])
 
-###################################################################
-## ID
-###################################################################
+##########
+### ID ###
+##########
 process.mID = cms.EDProducer(
     "MuonIdEmbedder",
     src = cms.InputTag(options['MUON_COLL']),
     vertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
 )
-process.idEmbedSequence = cms.Sequence(process.mID)
-muonSource = 'mID'
+process.mPV = cms.EDProducer(
+    "MuonIpEmbedder",
+    src = cms.InputTag('mID'),
+    vertexSrc = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    beamspotSrc = cms.InputTag("offlineBeamSpot"),
+)
+
+process.idEmbedSequence = cms.Sequence(process.mID*process.mPV)
+muonSource = 'mPV'
 
 
 ############
@@ -171,7 +178,7 @@ process.muMcMatch = cms.EDProducer("MCTruthDeltaRMatcherNew",
 from SimGeneral.MixingModule.mix_2016_25ns_SpringMC_PUScenarioV1_PoissonOOTPU_cfi import mix
 pu_distribs = { "mc" : mix.input.nbPileupEvents.probValue }
 
-data_pu_distribs = { "golden_v2" : [2.2566754964100775, 1950.7101413328778, 17511.456675455047, 27074.20916127319, 31295.38904638094, 53522.20431560162, 35220.460642050515, 90928.4505886674, 158090.51550539696, 244779.69121570754, 475446.24468129413, 1032094.7569565654, 2867278.6011298, 8427431.69028668, 17066351.233420365, 24027307.400081296, 28582023.0191919, 31161312.562541533, 29834230.38765881, 24016276.70437407, 16773532.053158931, 10934908.81338181, 6882987.985089145, 4078652.637076056, 2188705.6729904166, 1038844.4766897545, 433153.3500083798, 160781.35010697396, 56761.72710812498, 23088.051876630037, 13703.115979318482, 11160.425830582903, 10107.562092362476, 9265.663899467123, 8452.643876626442, 7708.148529163162, 7083.028042403028, 6599.59737809236, 6251.554972113813, 6013.330098038255, 5850.7412552672895, 5728.700884743008, 5612.778750900018, 5486.076394019967, 5335.204681008237, 5152.708506844515, 4936.573628932316, 4688.59937381231, 4413.05262576535, 4115.649709073904, 3802.8200587118135, 3481.1800882296766, 3157.154600542835, 2836.702560279824, 2525.1215607577033, 2226.9167983369393, 1945.7261608204267, 1684.2949902672606, 1444.4940213184038, 1227.3732210270105, 1033.2435191116354, 861.7780761805193, 712.1249032724896, 583.0232918504774, 472.9175407256343, 380.0627464092443, 302.61882216537015, 238.730305964887, 186.5908075849736, 144.49205632995265, 110.85839804233966, 84.26823511318716, 63.464311178194166, 47.35493604185581, 35.00826099036062, 25.641591111449614, 18.607501788495206, 13.378250655929659, 9.529677972026128, 6.725494537916399] }
+data_pu_distribs = { "golden_v2" : [2182.0974237815058, 23982.61536263803, 69965.65140406518, 197986.45804659263, 360761.2702934934, 618833.2110524588, 1294653.2625905501, 9002888.851089654, 23288262.214837648, 31117597.39099118, 40944017.230754964, 57733538.73658765, 83682315.57466365, 115990600.07824127, 150941145.77642596, 183785582.24765, 205622340.13201085, 210634879.14830402, 200928607.69355252, 181576740.9714111, 156292041.111647, 127532432.99693091, 97964897.13034214, 70450676.96016556, 47226312.58673038, 29430755.94919289, 17058024.92005088, 9227445.142189559, 4682639.080967543, 2240806.73464195, 1015167.8624996855, 436276.70215337543, 177856.6086062794, 68673.90271215088, 25057.616014526295, 8620.812303806977, 2792.0870938091107, 850.8624973240721, 244.21998405867603, 66.24071137170579, 17.095448894713563, 4.250745652690683, 1.0390089900679278, 0.2565958750195954, 0.06582988128238443, 0.017806844134965572, 0.005044486045194729, 0.0014636359007932143, 0.00042440737017085395, 0.00012072800218017043, 3.3307112532343644e-05, 8.85656213316377e-06, 2.2626852442253487e-06, 5.544498660192687e-07, 1.3027313505720173e-07, 2.9345774144040604e-08, 6.328464974281189e-09, 1.3123147013516245e-09, 2.590094805299259e-10, 5.180189610598518e-11, 8.63364935099753e-12, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] }
 
 process.pileupReweightingProducer = cms.EDProducer("PileupWeightProducer",
                                                    #hardcodedWeights = cms.untracked.bool(True),
@@ -192,12 +199,20 @@ ZVariablesToStore = cms.PSet(
     )   
 
 ProbeVariablesToStore = cms.PSet(
-    probe_eta    = cms.string("eta"),
-    probe_abseta = cms.string("abs(eta)"),
-    probe_pt     = cms.string("pt"),
-    probe_et     = cms.string("et"),
-    probe_e      = cms.string("energy"),
-    probe_q      = cms.string("charge"),
+    probe_eta             = cms.string("eta"),
+    probe_abseta          = cms.string("abs(eta)"),
+    probe_pt              = cms.string("pt"),
+    probe_et              = cms.string("et"),
+    probe_e               = cms.string("energy"),
+    probe_q               = cms.string("charge"),
+    probe_isoR04          = cms.string(isolationDef),
+    probe_trackIso        = cms.string(trackIsoDef),
+    probe_dz              = cms.string('userFloat("dz")'),
+    probe_dxy             = cms.string('userFloat("dB2D")'),
+    probe_isGlobalMuon    = cms.string('isGlobalMuon'),
+    probe_isTrackerMuon   = cms.string('isTrackerMuon'),
+    probe_matchedStations = cms.string('numberOfMatchedStations'),
+    probe_bestTrackType   = cms.string('muonBestTrackType'),
     )
 
 TagVariablesToStore = cms.PSet(
@@ -283,7 +298,8 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         passingMedium = cms.string("isMediumMuon"),
         passingTight  = cms.string("userInt('isTightMuon')==1"), 
         passingIsoLoose = cms.string(isolationDef+" < 0.4"),
-        passingIsoTight = cms.string(isolationDef+" < 0.12"),
+        passingIsoTight = cms.string(isolationDef+" < 0.15"),
+        passingTrackIso = cms.string(trackIsoDef+" < 0.4"),
         passingMu17 = cms.InputTag("probeTriggersMu17Leg"),
         #passingMu17L1Match = cms.InputTag("probeTriggersMu17LegL1Mu12"),
         passingMu8= cms.InputTag("probeTriggersMu8Leg"),
