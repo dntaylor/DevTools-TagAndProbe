@@ -25,12 +25,9 @@ options['ELECTRON_TAG_CUTS']       = "(abs(eta)<=2.5) && !(1.4442<=abs(eta)<=1.5
 options['SUPERCLUSTER_COLL']       = "reducedEgamma:reducedSuperClusters"
 options['SUPERCLUSTER_CUTS']       = "abs(eta)<2.5 && !(1.4442< abs(eta) <1.566) && et>10.0"
 options['MAXEVENTS']               = cms.untracked.int32(-1) 
-options['useAOD']                  = cms.bool(False)
-options['DOTRIGGER']               = cms.bool(True)
-options['DORECO']                  = cms.bool(True)
-options['DOID']                    = cms.bool(True)
 options['OUTPUTEDMFILENAME']       = 'edmFile.root'
 options['DEBUG']                   = cms.bool(False)
+options['useAOD']                  = cms.bool(False)
 
 from PhysicsTools.TagAndProbe.treeMakerOptions_cfi import *
 
@@ -46,7 +43,7 @@ if (varOptions.isMC):
 else:
     options['INPUT_FILE_NAME']     = "/store/data/Run2016B/MET/MINIAOD/PromptReco-v2/000/273/158/00000/06A9DFDA-201A-E611-858F-02163E0136F7.root"
     options['OUTPUT_FILE_NAME']    = "TnPTree_data_singleElectron.root"
-    options['TnPPATHS']            = ["HLT_PFMET170_HBHECleaned_v*",]
+    options['TnPPATHS']            = ["HLT_PFMET170_HBHECleaned_v*","HLT_MET200_v*"]
     options['TnPHLTTagFilters']    = []
     options['TnPHLTProbeFilters']  = cms.vstring()
     options['HLTFILTERTOMEASURE']  = cms.vstring("")
@@ -55,9 +52,35 @@ else:
 
 ###################################################################
 
-setModules(process, options)
+#setModules(process, options)
 
-# manually fix pileup
+#############
+### Setup ###
+#############
+process.sampleInfo = cms.EDProducer("tnp::SampleInfoTree",
+                                    #vertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices"),
+                                    genInfo = cms.InputTag("generator")
+                                    )
+
+process.eleVarHelper = cms.EDProducer("PatElectronVariableHelper",
+                                      probes = cms.InputTag(options['ELECTRON_COLL']),
+                                      vertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices")
+                                      )
+
+##################
+### Select HLT ###
+##################
+from HLTrigger.HLTfilters.hltHighLevel_cfi import hltHighLevel
+process.hltFilter = hltHighLevel.clone()
+process.hltFilter.throw = cms.bool(True)
+process.hltFilter.HLTPaths = options['TnPPATHS']
+
+##############
+### Pileup ###
+##############
+from PhysicsTools.TagAndProbe.pileupConfiguration_cfi import pileupProducer
+process.pileupReweightingProducer = pileupProducer.clone()
+
 from SimGeneral.MixingModule.mix_2016_25ns_SpringMC_PUScenarioV1_PoissonOOTPU_cfi import mix
 pu_distribs = { "mc" : mix.input.nbPileupEvents.probValue }
 
@@ -65,8 +88,6 @@ data_pu_distribs = { "golden_v2" : [2.2566754964100775, 1950.7101413328778, 1751
 
 process.pileupReweightingProducer.pileupMC = cms.vdouble(pu_distribs['mc'])
 process.pileupReweightingProducer.PileupData = cms.vdouble(data_pu_distribs["golden_v2"])
-
-from PhysicsTools.TagAndProbe.treeContent_cfi import *
 
 process.load("Configuration.StandardSequences.MagneticField_AutoFromDBCurrent_cff")
 process.load("Configuration.Geometry.GeometryRecoDB_cff")
@@ -90,22 +111,47 @@ process.source = cms.Source("PoolSource",
 
 process.maxEvents = cms.untracked.PSet( input = options['MAXEVENTS'])
 
-###################################################################
-## ID
-###################################################################
+##########
+### ID ###
+##########
 
 from PhysicsTools.TagAndProbe.electronIDModules_cfi import *
 setIDs(process, options)
 
+############
+### Tags ###
+############
+process.tagElectrons = cms.EDFilter("PATElectronRefSelector",
+    src = cms.InputTag(options['ELECTRON_COLL']),
+    cut = cms.string(options['ELECTRON_TAG_CUTS']),
+    filter = cms.bool(True)
+)
 
-###############
-### Trigger ###
-###############
+process.tagElectronsTriggerMatched = cms.EDProducer("PatElectronTriggerCandProducer",
+    filterNames = cms.vstring(options['TnPHLTTagFilters']),
+    inputs      = cms.InputTag("tagElectrons"),
+    bits        = cms.InputTag('TriggerResults::HLT'),
+    objects     = cms.InputTag('selectedPatTrigger'),
+    dR          = cms.double(0.4),
+    isAND       = cms.bool(True)
+    )
+
+process.goodElectrons = cms.EDFilter("PATElectronRefSelector",
+    src = cms.InputTag(options['ELECTRON_COLL']),
+    cut = cms.string(options['ELECTRON_CUTS']),
+)
+
+
+
+######################
+### Trigger probes ###
+######################
 process.goodElectronsMeasureHLT = cms.Sequence()
 
+# single electron
 process.goodElectronsMeasureHLTEle23 = cms.EDProducer("PatElectronTriggerCandProducer",
-                                                filterNames = cms.vstring("hltEle23CaloIdLTrackIdLIsoVLTrackIsoFilter"),
-                                                inputs      = cms.InputTag("goodElectronsProbeMeasureHLT"),
+                                                filterNames = cms.vstring("hltEle23WPLooseGsfTrackIsoFilter"),
+                                                inputs      = cms.InputTag("goodElectrons"),
                                                 bits        = cms.InputTag('TriggerResults::HLT'),
                                                 objects     = cms.InputTag('selectedPatTrigger'),
                                                 dR          = cms.double(0.3),
@@ -113,6 +159,27 @@ process.goodElectronsMeasureHLTEle23 = cms.EDProducer("PatElectronTriggerCandPro
                                                 )
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle23
 
+process.goodElectronsMeasureHLTEle22Eta2p1 = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTEle22Eta2p1.filterNames = cms.vstring("hltSingleEle22WPLooseGsfTrackIsoFilter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle22Eta2p1
+
+process.goodElectronsMeasureHLTEle24Eta2p1 = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTEle24Eta2p1.filterNames = cms.vstring("hltSingleEle24WPLooseGsfTrackIsoFilter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle24Eta2p1
+
+process.goodElectronsMeasureHLTEle25Eta2p1 = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTEle25Eta2p1.filterNames = cms.vstring("hltEle25erWPLooseGsfTrackIsoFilter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle25Eta2p1
+
+process.goodElectronsMeasureHLTEle27 = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTEle27.filterNames = cms.vstring("hltEle27noerWPLooseGsfTrackIsoFilter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle27
+
+process.goodElectronsMeasureHLTEle35 = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTEle35.filterNames = cms.vstring("hltEle35WPLooseGsfTrackIsoFilter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle35
+
+# double electron
 process.goodElectronsMeasureHLTEle17 = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle17.filterNames = cms.vstring("hltEle17CaloIdLTrackIdLIsoVLTrackIsoFilter")
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle17
@@ -142,57 +209,38 @@ process.goodElectronsMeasureHLTMu17Ele12ELeg = process.goodElectronsMeasureHLTEl
 process.goodElectronsMeasureHLTMu17Ele12ELeg.filterNames = cms.vstring("hltMu17TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu17Ele12ELeg
 
-###################################################################
-## SEQUENCES
-###################################################################
+#################
+### SEQUENCES ###
+#################
 
 process.egmGsfElectronIDs.physicsObjectSrc = cms.InputTag(options['ELECTRON_COLL'])
 process.ele_sequence = cms.Sequence(
     process.goodElectrons +
     process.egmGsfElectronIDSequence +
-    process.goodElectronsPROBECutBasedVeto +
-    process.goodElectronsPROBECutBasedLoose +
-    process.goodElectronsPROBECutBasedMedium +
-    process.goodElectronsPROBECutBasedTight +
-    process.goodElectronsTAGCutBasedVeto +
-    process.goodElectronsTAGCutBasedLoose +
-    process.goodElectronsTAGCutBasedMedium +
-    process.goodElectronsTAGCutBasedTight +
-    process.goodElectronsTagHLT +
-    process.goodElectronsProbeHLT +
-    process.goodElectronsProbeMeasureHLT +
+    process.tagElectrons + 
+    process.tagElectronsTriggerMatched +
     process.goodElectronsMeasureHLT
     )
 
-process.sc_sequence = cms.Sequence(process.superClusterCands +
-                                   process.goodSuperClusters +
-                                   process.goodSuperClustersHLT +
-                                   process.GsfMatchedSuperClusterCands
-                                   )
 
-###################################################################
-## TnP PAIRS
-###################################################################
+#################
+### TnP PAIRS ###
+#################
 
 process.allTagsAndProbes = cms.Sequence()
 
-if (options['DOTRIGGER']):
-    process.allTagsAndProbes *= process.tagTightHLT
+process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
+    decay = cms.string("tagElectronsTriggerMatched@+ goodElectrons@-"), # charge coniugate states are implied
+    cut   = cms.string("40 < mass < 200")
+)
 
-if (options['DORECO']):
-    process.allTagsAndProbes *= process.tagTightSC
+process.allTagsAndProbes *= process.tpPairs
 
-if (options['DOID']):
-    process.allTagsAndProbes *= process.tagTightRECO
+##########################
+### TREE MAKER OPTIONS ###
+##########################
+from PhysicsTools.TagAndProbe.treeContent_cfi import *
 
-process.mc_sequence = cms.Sequence()
-
-#if (varOptions.isMC):
-#    process.mc_sequence *= (process.McMatchHLT + process.McMatchTag + process.McMatchSC + process.McMatchRECO)
-
-##########################################################################
-## TREE MAKER OPTIONS
-##########################################################################
 if (not varOptions.isMC):
     mcTruthCommonStuff = cms.PSet(
         isMC = cms.bool(False)
@@ -214,10 +262,15 @@ del CommonStuffForSuperClusterProbe.tagVariables.sc_abseta
 
 process.GsfElectronToTrigger = cms.EDAnalyzer("TagProbeFitTreeProducer",
                                               CommonStuffForSuperClusterProbe, mcTruthCommonStuff,
-                                              tagProbePairs = cms.InputTag("tagTightHLT"),
+                                              tagProbePairs = cms.InputTag("tpPairs"),
                                               arbitration   = cms.string("Random2"),
                                               flags         = cms.PSet(
+                                                  passingHLTEle22Eta2p1    = cms.InputTag("goodElectronsMeasureHLTEle22Eta2p1"),
+                                                  passingHLTEle24Eta2p1    = cms.InputTag("goodElectronsMeasureHLTEle24Eta2p1"),
+                                                  passingHLTEle25Eta2p1    = cms.InputTag("goodElectronsMeasureHLTEle25Eta2p1"),
                                                   passingHLTEle23    = cms.InputTag("goodElectronsMeasureHLTEle23"),
+                                                  passingHLTEle27    = cms.InputTag("goodElectronsMeasureHLTEle27"),
+                                                  passingHLTEle35    = cms.InputTag("goodElectronsMeasureHLTEle35"),
                                                   passingHLTEle17    = cms.InputTag("goodElectronsMeasureHLTEle17"),
                                                   passingHLTEle12    = cms.InputTag("goodElectronsMeasureHLTEle12"),
                                                   passingHLTEle17Ele12Leg1    = cms.InputTag("goodElectronsMeasureHLTEle17Ele12Leg1"),
@@ -225,7 +278,7 @@ process.GsfElectronToTrigger = cms.EDAnalyzer("TagProbeFitTreeProducer",
                                                   passingHLTEle17Ele12Leg2    = cms.InputTag("goodElectronsMeasureHLTEle17Ele12Leg2"),
                                                   passingHLTMu17Ele12ELeg     = cms.InputTag("goodElectronsMeasureHLTMu17Ele12ELeg"),
                                                                        ),                                               
-                                              allProbes     = cms.InputTag("goodElectronsProbeMeasureHLT"),
+                                              allProbes     = cms.InputTag("probeElectrons"),
                                               )
 
 if (varOptions.isMC):
@@ -233,47 +286,9 @@ if (varOptions.isMC):
     process.GsfElectronToTrigger.eventWeight   = cms.InputTag("generator")
     process.GsfElectronToTrigger.PUWeightSrc   = cms.InputTag("pileupReweightingProducer","pileupWeights")
 
-process.GsfElectronToSC = cms.EDAnalyzer("TagProbeFitTreeProducer",
-                                         CommonStuffForSuperClusterProbe, mcTruthCommonStuff,
-                                         tagProbePairs = cms.InputTag("tagTightSC"),
-                                         arbitration   = cms.string("Random2"),
-                                         flags         = cms.PSet(passingRECO   = cms.InputTag("GsfMatchedSuperClusterCands", "superclusters"),         
-                                                                  ),                                               
-                                         allProbes     = cms.InputTag("goodSuperClustersHLT"),
-                                         )
-
-if (varOptions.isMC):
-    #process.GsfElectronToSC.probeMatches  = cms.InputTag("McMatchSC")
-    process.GsfElectronToSC.eventWeight   = cms.InputTag("generator")
-    process.GsfElectronToSC.PUWeightSrc   = cms.InputTag("pileupReweightingProducer","pileupWeights")
-
-process.GsfElectronToRECO = cms.EDAnalyzer("TagProbeFitTreeProducer",
-                                           mcTruthCommonStuff, CommonStuffForGsfElectronProbe,
-                                           tagProbePairs = cms.InputTag("tagTightRECO"),
-                                           arbitration   = cms.string("Random2"),
-                                           flags         = cms.PSet(
-                                                                    passingVeto   = cms.InputTag("goodElectronsPROBECutBasedVeto"),
-                                                                    passingLoose  = cms.InputTag("goodElectronsPROBECutBasedLoose"),
-                                                                    passingMedium = cms.InputTag("goodElectronsPROBECutBasedMedium"),
-                                                                    passingTight  = cms.InputTag("goodElectronsPROBECutBasedTight"),
-                                                                    ),                                               
-                                           allProbes     = cms.InputTag("goodElectronsProbeHLT"),
-                                           )
-
-if (varOptions.isMC):
-    #process.GsfElectronToRECO.probeMatches  = cms.InputTag("McMatchRECO")
-    process.GsfElectronToRECO.eventWeight   = cms.InputTag("generator")
-    process.GsfElectronToRECO.PUWeightSrc   = cms.InputTag("pileupReweightingProducer","pileupWeights")
 
 process.tree_sequence = cms.Sequence()
-if (options['DOTRIGGER']):
-    process.tree_sequence *= process.GsfElectronToTrigger
-
-if (options['DORECO']):
-    process.tree_sequence *= process.GsfElectronToSC
-
-if (options['DOID']):
-    process.tree_sequence *= process.GsfElectronToRECO
+process.tree_sequence *= process.GsfElectronToTrigger
 
 ##########################################################################
 ## PATHS
@@ -292,10 +307,8 @@ if (varOptions.isMC):
         process.sampleInfo +
         process.hltFilter +
         process.ele_sequence + 
-        process.sc_sequence +
         process.allTagsAndProbes +
         process.pileupReweightingProducer +
-        process.mc_sequence +
         process.eleVarHelper +
         process.tree_sequence
         )
@@ -304,9 +317,7 @@ else:
         process.sampleInfo +
         process.hltFilter +
         process.ele_sequence + 
-        process.sc_sequence +
         process.allTagsAndProbes +
-        process.mc_sequence +
         process.eleVarHelper +
         process.tree_sequence
         )
