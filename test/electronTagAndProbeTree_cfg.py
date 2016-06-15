@@ -220,18 +220,18 @@ if (not varOptions.isMC):
         )
 
 # remove sc stuff that is broken
-del CommonStuffForGsfElectronProbe.variables.probe_sc_energy
-del CommonStuffForGsfElectronProbe.variables.probe_sc_et
-del CommonStuffForGsfElectronProbe.variables.probe_sc_eta
-del CommonStuffForGsfElectronProbe.variables.probe_sc_abseta
-del CommonStuffForGsfElectronProbe.tagVariables.sc_energy
-del CommonStuffForGsfElectronProbe.tagVariables.sc_et
-del CommonStuffForGsfElectronProbe.tagVariables.sc_eta
-del CommonStuffForGsfElectronProbe.tagVariables.sc_abseta
-del CommonStuffForSuperClusterProbe.tagVariables.sc_energy
-del CommonStuffForSuperClusterProbe.tagVariables.sc_et
-del CommonStuffForSuperClusterProbe.tagVariables.sc_eta
-del CommonStuffForSuperClusterProbe.tagVariables.sc_abseta
+if hasattr(CommonStuffForGsfElectronProbe.variables,'probe_sc_energy'): del CommonStuffForGsfElectronProbe.variables.probe_sc_energy
+if hasattr(CommonStuffForGsfElectronProbe.variables,'probe_sc_et'):     del CommonStuffForGsfElectronProbe.variables.probe_sc_et
+if hasattr(CommonStuffForGsfElectronProbe.variables,'probe_sc_eta'):    del CommonStuffForGsfElectronProbe.variables.probe_sc_eta
+if hasattr(CommonStuffForGsfElectronProbe.variables,'probe_sc_abseta'): del CommonStuffForGsfElectronProbe.variables.probe_sc_abseta
+if hasattr(CommonStuffForGsfElectronProbe.tagVariables,'sc_energy'):    del CommonStuffForGsfElectronProbe.tagVariables.sc_energy
+if hasattr(CommonStuffForGsfElectronProbe.tagVariables,'sc_et'):        del CommonStuffForGsfElectronProbe.tagVariables.sc_et
+if hasattr(CommonStuffForGsfElectronProbe.tagVariables,'sc_eta'):       del CommonStuffForGsfElectronProbe.tagVariables.sc_eta
+if hasattr(CommonStuffForGsfElectronProbe.tagVariables,'sc_abseta'):    del CommonStuffForGsfElectronProbe.tagVariables.sc_abseta
+if hasattr(CommonStuffForSuperClusterProbe.tagVariables,'sc_energy'):   del CommonStuffForSuperClusterProbe.tagVariables.sc_energy
+if hasattr(CommonStuffForSuperClusterProbe.tagVariables,'sc_et'):       del CommonStuffForSuperClusterProbe.tagVariables.sc_et
+if hasattr(CommonStuffForSuperClusterProbe.tagVariables,'sc_eta'):      del CommonStuffForSuperClusterProbe.tagVariables.sc_eta
+if hasattr(CommonStuffForSuperClusterProbe.tagVariables,'sc_abseta'):   del CommonStuffForSuperClusterProbe.tagVariables.sc_abseta
 
 process.GsfElectronToTrigger = cms.EDAnalyzer("TagProbeFitTreeProducer",
                                               CommonStuffForSuperClusterProbe, mcTruthCommonStuff,
