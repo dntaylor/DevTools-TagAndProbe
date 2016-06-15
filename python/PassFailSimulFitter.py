@@ -58,7 +58,7 @@ class PassFailSimulFitter :
             self._wsimport(data)
 
     def addDataFromTree(self, tree, dataName, allProbeCondition, passingProbeCondition, **kwargs) :
-        weightVariable = kwargs.pop('weightVariable', 'totWeight')
+        weightVariable = kwargs.pop('weightVariable', 1)
         separatePassFail = kwargs.pop('separatePassFail', False)
         varMin = self._fitVar.getMin()
         varMax = self._fitVar.getMax()

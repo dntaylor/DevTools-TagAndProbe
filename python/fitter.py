@@ -7,12 +7,12 @@ import argparse
 import ROOT
 ROOT.gROOT.SetBatch(True)
 ROOT.PyConfig.IgnoreCommandLineOptions = True
-from DevTools.TagAndProbe.PassFailSimulFitter import PassFailSimulFitter
+from Analysis.TagAndProbe.PassFailSimulFitter import PassFailSimulFitter
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
 pdfDefinition = []
-with open('{0}/src/DevTools/TagAndProbe/data/pdfDefinitions.txt'.format(os.environ['CMSSW_BASE'])) as defFile :
+with open('{0}/src/Analysis/TagAndProbe/data/pdfDefinitions.txt'.format(os.environ['CMSSW_BASE'])) as defFile :
     for line in defFile :
         line = line.strip()
         if len(line) == 0 or line[0] is '#' :
@@ -27,7 +27,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     fitVariable = ROOT.RooRealVar('mass', 'TP Pair Mass', 60, 120, 'GeV')
     fitVariable.setBins(60)
 
-    mcTruthCondition = ['mcTrue']
+    #mcTruthCondition = ['mcTrue']
     mcTruthCondition = []
 
     ROOT.gDirectory.mkdir(name).cd()
@@ -35,7 +35,11 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     fitter.addDataFromTree(tmc, 'mcData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True)
     fitter.addDataFromTree(tmcAlt, 'mcAltData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True)
     nMCPass = fitter.workspace.data('mcDataPass').sumEntries()
+    print 'allProbeCond: %s' % allProbeCondition 
+    print 'allProbePassCond: %s' % passingProbeCondition 
+    print 'number pass: %.2f' % nMCPass 
     nMCFail = fitter.workspace.data('mcDataFail').sumEntries()
+    print 'number fail: %.2f' % nMCFail
     mcEff = nMCPass/(nMCPass+nMCFail)
     mcEffLo = ROOT.TEfficiency.ClopperPearson(int(nMCPass+nMCFail), int(nMCPass), 0.68, False)
     mcEffHi = ROOT.TEfficiency.ClopperPearson(int(nMCPass+nMCFail), int(nMCPass), 0.68, True)
@@ -53,7 +57,10 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     dataEff = effValue.getVal()
     dataEffErrHi = effValue.getErrorHi()
     dataEffErrLo = effValue.getErrorLo()
-    scaleFactor = dataEff / mcEff
+    if ( mcEff==0):
+       scaleFactor=0
+    else:
+       scaleFactor = (dataEff / mcEff)
     maxSf = (dataEff+dataEffErrHi)/mcEffLo
     minSf = (dataEff+dataEffErrLo)/mcEffHi
     res.SetName('fitresults')
@@ -68,11 +75,11 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     resAlt.SetName('fitresults_systAltTemplate')
     resAlt.Write()
 
-    print '-'*40, 'Fit with tag pt > 30 (vs. 25)'
-    fitter.addDataFromTree(tdata, 'dataTagPt30', allProbeCondition+['tag_Ele_pt>30'], passingProbeCondition)
-    resTagPt30 = fitter.fit('simPdf', 'dataTagPt30')
-    dataTagPt30Eff = resTagPt30.floatParsFinal().find('efficiency').getVal()
-    resTagPt30.Write()
+    #print '-'*40, 'Fit with tag pt > 30 (vs. 25)'
+    #fitter.addDataFromTree(tdata, 'dataTagPt30', allProbeCondition+['tag_tag_pt>30'], passingProbeCondition)
+    #resTagPt30 = fitter.fit('simPdf', 'dataTagPt30')
+    #dataTagPt30Eff = resTagPt30.floatParsFinal().find('efficiency').getVal()
+    #resTagPt30.Write()
 
     print '-'*40, 'Fit with CMSShape background (vs. Bernstein)'
     resCMSBkg = fitter.fit('simCMSBkgPdf', 'data')
@@ -87,7 +94,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
             'STAT_UP'  : (maxSf, res),
             'STAT_DOWN': (minSf, res),
             'SYST_ALT_TEMPL' : (dataAltEff / mcEff, resAlt),
-            'SYST_TAG_PT30' : (dataTagPt30Eff / mcEff, resTagPt30),
+            #'SYST_TAG_PT30' : (dataTagPt30Eff / mcEff, resTagPt30),
             'SYST_CMSSHAPE' : (dataCMSBkgEff / mcEff, resCMSBkg),
             'EFF_DATA' : (dataEff, res),
             'EFF_DATA_ERRSYM' : ((dataEffErrHi-dataEffErrLo)/2, res),
@@ -101,7 +108,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
         print '  Variation {:>15s} : {:.4f}, edm={:f}, status={:s}'.format(varName, value, fitResult.edm(), statusInfo(fitResult))
         if 'STAT' not in varName and 'EFF' not in varName and fitResult.statusCodeHistory(0) < 0 :
             cBad = fitter.drawFitCanvas(fitResult)
-            cBad.Print('fits/{0}/badFit_{0}_{2}.png'.format(name, varName))
+            cBad.Print('fits/badFit_%s_%s.png' %(name, varName))
 
     ROOT.TNamed('cutString', cutString).Write()
     print
@@ -135,13 +142,13 @@ def runfit(args):
 
     # binning for the efficiencies
     ptBinMap = {
-        'electron' : [10, 20, 30, 40, 50, 13000],
-        'muon'     : [10, 20, 30, 40, 50, 13000],
+        'electron' : [10, 20, 30, 40, 50, 1000],
+        'muon'     : [10, 20, 30, 40, 50, 1000],
     }
 
     etaBinMap = {
         'electron' : [0., 0.8, 1.479, 2.0, 2.5],
-        'muon'     : [0., 0.9, 1.2,   2.1, 2.4],
+        'muon'     : [0., 0.9, 1.2, 2.1],
     }
 
     ptVar = {
@@ -174,13 +181,22 @@ def runfit(args):
     fout.mkdir('{0}Fits'.format(args.object)).cd()
 
     if args.object=='electron':
-        fit('CutBasedIDVeto',   [], 'passingVeto',   binning, commonVars+['bool passingVeto'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-        fit('CutBasedIDLoose',  [], 'passingLoose',  binning, commonVars+['bool passingLoose'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-        fit('CutBasedIDMedium', [], 'passingMedium', binning, commonVars+['bool passingMedium'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-        fit('CutBasedIDTight',  [], 'passingTight',  binning, commonVars+['bool passingTight'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        #fit('CutBasedIDVeto',   [], 'passingVeto',   binning, commonVars+['bool passingVeto'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        #fit('CutBasedIDLoose',  [], 'passingLoose',  binning, commonVars+['bool passingLoose'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        #fit('CutBasedIDMedium', [], 'passingMedium', binning, commonVars+['bool passingMedium'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        #fit('CutBasedIDTight',  [], 'passingTight',  binning, commonVars+['bool passingTight'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        #fit('MVAID80',  [], 'passingMVA80',  binning, commonVars+['bool passingMVA80'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        #fit('MVAID90',  [], 'passingMVA90',  binning, commonVars+['bool passingMVA90'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('HTTID',  [], 'passingHTTID',  binning, commonVars+['bool passingHTTID'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('HTTISOwrtID',  ['passingHTTID'], 'passingHTTISO',  binning, commonVars+['bool passingHTTISO','bool passingHTTID'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('HTTISOID',  [], 'passingHTTIDISO',  binning, commonVars+['bool passingHTTIDISO'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
     if args.object=='muon':
-        fit('MediumID',   [], 'passingMedium',   binning, commonVars+['bool passingMedium'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-        fit('TightID',   [], 'passingTight',   binning, commonVars+['bool passingTight'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        #fit('MediumID',   [], 'passingMedium',   binning, commonVars+['bool passingMedium'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        #fit('TightID',   [], 'passingTight',   binning, commonVars+['bool passingTight'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('HTTID',   [], 'passingHTTID',   binning, commonVars+['bool passingHTTID'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('HTTISO',   ['passingHTTID'], 'passingHTTIsoTight',   binning, commonVars+['bool passingHTTIsoTight','bool passingHTTID'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+	#no MC trigger DO NOT USE YET
+        #fit('Iso20',   [], 'passingIsoMu20',   binning, commonVars+['bool passingIsoMu20'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
 
 
 def parse_command_line(argv):

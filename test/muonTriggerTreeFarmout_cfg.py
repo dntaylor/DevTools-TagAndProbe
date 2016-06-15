@@ -13,52 +13,15 @@ options.register(
     VarParsing.varType.bool,
     "Compute MC efficiencies"
     )
-options.register(
-    "farmout",
-    False,
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool,
-    "Submit to Farmout analysis Jobs"
-    )
-
 
 options.parseArguments()
-
-inputFilesMC = [
-   '/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/00000/223DEB09-211B-E611-966F-001E67248A39.root',
-   '/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/00000/0251DBB7-201B-E611-8653-0CC47A4F1C2E.root',
-   '/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/00000/0418932E-5B1B-E611-AC56-0CC47A4C6EFC.root'
-]
-
-inputFilesData = [
-   '/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/725/00000/B2C6C9F2-1621-E611-9ECF-02163E01412B.root',
-   '/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/725/00000/B847131D-1721-E611-B35D-02163E014456.root',
-   '/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/725/00000/BEC7F2E9-1621-E611-95E2-02163E014409.root',
-   '/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/725/00000/D67EF0E5-1621-E611-B823-02163E011DE7.root',
-   '/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/725/00000/E4727004-1721-E611-A26F-02163E0143B2.root',
-   '/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/725/00000/E4DA02F6-1621-E611-8376-02163E014656.root',
-   '/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/725/00000/E6FB94EB-1621-E611-8577-02163E014632.root',
-   '/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/725/00000/EEBB36E6-1621-E611-B499-02163E014775.root'
-]
-
-
-if options.isMC :
-   options.inputFiles = inputFilesMC
-   options.outputFile = 'TnPTree_mc.root'
-else :
-   options.inputFiles = inputFilesData
-   options.outputFile = 'TnPTree_data.root'
-
-#if options.farmout :
-#options.inputFiles = $inputFileNames
-#options.outputFile = "$outputFileNames"
 
 config = dict()
 isolationDef = "(chargedHadronIso+max(photonIso+neutralHadronIso-0.5*puChargedHadronIso,0.0))/pt"
 config['HLTProcessName']          = "HLT"
 config['MUON_COLL']               = "slimmedMuons"
-config['MUON_CUTS']               = "userInt('tightID')==1 && pt > 5 && "+isolationDef+" < 0.15"
-config['MUON_TAG_CUTS']           = "userInt('tightID')==1 && pt > 22 && abs(eta) < 2.4"
+config['MUON_CUTS']               = "userInt('tightID')==1 && pt > 5 && abs(eta)<2.4 && "+isolationDef+" < 0.15"
+config['MUON_TAG_CUTS']           = "userInt('tightID')==1 && pt > 22 && abs(eta) < 2.4 &&"+isolationDef+"<0.1"
 #config['MUON_CUTS']               = "isMediumMuon && abs(eta)<2.1 && pt > 5"
 #config['MUON_TAG_CUTS']           = "(userInt('tightID')==1 && pt > 25 && abs(eta) < 2.1 && "+isolationDef+" < 0.2)"
 config['MAXEVENTS']               = cms.untracked.int32(-1) 
@@ -102,6 +65,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(config['INPUT_FILE_NAME']),
+			    firstRun  = cms.untracked.uint32(274094)
                             )
 
 process.maxEvents = cms.untracked.PSet( input = config['MAXEVENTS'])
@@ -347,14 +311,6 @@ process.p = cms.Path(
     process.tpPairSeq *
     process.muonEffs
     )
-
-process.out = cms.OutputModule("PoolOutputModule",
-                               fileName = cms.untracked.string(config['OUTPUTEDMFILENAME']),
-                               SelectEvents = cms.untracked.PSet(SelectEvents = cms.vstring("p"))
-                               )
-process.outpath = cms.EndPath(process.out)
-if (not config['DEBUG']):
-    process.outpath.remove(process.out)
 
 process.TFileService = cms.Service(
     "TFileService", fileName = cms.string(config['OUTPUT_FILE_NAME']),
