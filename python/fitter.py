@@ -9,6 +9,7 @@ ROOT.gROOT.SetBatch(True)
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from DevTools.TagAndProbe.PassFailSimulFitter import PassFailSimulFitter
 from DevTools.Utilities.utilities import python_mkdir
+from DevTools.TagAndProbe.utilities import getBinning
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -37,7 +38,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     fitter.addDataFromTree(tmcAlt, 'mcAltData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True)
     nMCPass = fitter.workspace.data('mcDataPass').sumEntries()
     nMCFail = fitter.workspace.data('mcDataFail').sumEntries()
-    mcEff = nMCPass/(nMCPass+nMCFail)
+    mcEff = nMCPass/(nMCPass+nMCFail) if nMCPass+nMCFail else 0.
     mcEffLo = ROOT.TEfficiency.ClopperPearson(int(nMCPass+nMCFail), int(nMCPass), 0.68, False)
     mcEffHi = ROOT.TEfficiency.ClopperPearson(int(nMCPass+nMCFail), int(nMCPass), 0.68, True)
     h=ROOT.TH1F('mc_cutCount', 'Cut & Count', 2, 0, 2)
@@ -81,15 +82,15 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     resCMSBkg.Write()
 
     fitter.workspace.Write()
-    print name, ': Data=%.2f, MC=%.2f, Ratio=%.2f' % (dataEff, mcEff, dataEff/mcEff)
+    print name, ': Data=%.2f, MC=%.2f, Ratio=%.2f' % (dataEff, mcEff, scaleFactor)
     condition = ' && '.join(allProbeCondition+[passingProbeCondition])
     variations = {
             'CENTRAL'  : (scaleFactor, res),
             'STAT_UP'  : (maxSf, res),
             'STAT_DOWN': (minSf, res),
-            'SYST_ALT_TEMPL' : (dataAltEff / mcEff, resAlt),
-            'SYST_TAG_PT30' : (dataTagPt30Eff / mcEff, resTagPt30),
-            'SYST_CMSSHAPE' : (dataCMSBkgEff / mcEff, resCMSBkg),
+            'SYST_ALT_TEMPL' : (dataAltEff / mcEff if mcEff else 0., resAlt),
+            'SYST_TAG_PT30' : (dataTagPt30Eff / mcEff if mcEff else 0., resTagPt30),
+            'SYST_CMSSHAPE' : (dataCMSBkgEff / mcEff if mcEff else 0., resCMSBkg),
             'EFF_DATA' : (dataEff, res),
             'EFF_DATA_ERRSYM' : ((dataEffErrHi-dataEffErrLo)/2, res),
             'EFF_MC' : (mcEff, res),
@@ -102,8 +103,8 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
         print '  Variation {:>15s} : {:.4f}, edm={:f}, status={:s}'.format(varName, value, fitResult.edm(), statusInfo(fitResult))
         if 'STAT' not in varName and 'EFF' not in varName and fitResult.statusCodeHistory(0) < 0 :
             cBad = fitter.drawFitCanvas(fitResult)
-            python_mkdir('fits/{0}'.format(name))
-            cBad.Print('fits/{0}/badFit_{0}_{1}.png'.format(name, varName))
+            python_mkdir('fits/badFits/{0}'.format(name))
+            cBad.Print('fits/badFits/{0}/badFit_{0}_{1}.png'.format(name, varName))
 
     ROOT.TNamed('cutString', cutString).Write()
     print
@@ -137,13 +138,13 @@ def runfit(args):
 
     # binning for the efficiencies
     ptBinMap = {
-        'electron' : [10, 20, 30, 40, 50, 1000],
-        'muon'     : [10, 20, 30, 40, 50, 1000],
+        'electron' : getBinning('electron','pt'),
+        'muon'     : getBinning('muon','pt'),
     }
 
     etaBinMap = {
-        'electron' : [0., 0.8, 1.479, 2.0, 2.5],
-        'muon'     : [-2.4, -2.1, -1.6, -1.2, -0.9, -0.3, -0.2, 0.2, 0.3, 0.9, 1.2, 1.6, 2.1, 2.4],
+        'electron' : getBinning('electron','eta'),
+        'muon'     : getBinning('muon','eta'),
     }
 
     ptVar = {
@@ -152,7 +153,7 @@ def runfit(args):
     }
 
     etaVar = {
-        'electron' : 'probe_Ele_abseta',
+        'electron' : 'probe_Ele_eta',
         'muon'     : 'probe_eta',
     }
 
@@ -165,7 +166,7 @@ def runfit(args):
         for eb in range(len(etaBinMap[args.object][:-1])):
             etalow = etaBinMap[args.object][eb]
             etahigh = etaBinMap[args.object][eb+1]
-            etaname = 'abseta{0}to{1}'.format(etalow,etahigh)
+            etaname = 'eta{0}to{1}'.format(etalow,etahigh)
             etacut = '{0}>={1} && {0}<{2}'.format(etaVar[args.object],etalow,etahigh)
             binning['{0}_{1}'.format(ptname,etaname)] = [ptcut,etacut]
 

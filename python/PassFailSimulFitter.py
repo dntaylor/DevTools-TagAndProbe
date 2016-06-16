@@ -87,7 +87,7 @@ class PassFailSimulFitter :
         # TODO: relies on fitVar being Z mass
         nPassCenter = data.sumEntries('decision==decision::Passed && mass>80 && mass<100')
         nPassSides   = data.sumEntries('decision==decision::Passed && mass<80 && mass>100')
-        signalFractionPassing = (nPassCenter-nPassSides/2)/nPass
+        signalFractionPassing = (nPassCenter-nPassSides/2)/nPass if nPass else 0.
 
         initialEff = w.var('efficiency').getVal()
         nSignal = min(nPass*signalFractionPassing/initialEff, nPass+nFail)
