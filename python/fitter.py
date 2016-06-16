@@ -25,7 +25,7 @@ def statusInfo(fitResults):
     fitStatus=':'.join(['% d' % fitResults.statusCodeHistory(i) for i in range(fitResults.numStatusHistory())]),
     return fitStatus
 
-def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None, tdata=None):
+def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None, tdata=None, obj=''):
     fitVariable = ROOT.RooRealVar('mass', 'TP Pair Mass', 60, 120, 'GeV')
     fitVariable.setBins(60)
 
@@ -103,18 +103,18 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
         print '  Variation {:>15s} : {:.4f}, edm={:f}, status={:s}'.format(varName, value, fitResult.edm(), statusInfo(fitResult))
         if 'STAT' not in varName and 'EFF' not in varName and fitResult.statusCodeHistory(0) < 0 :
             cBad = fitter.drawFitCanvas(fitResult)
-            python_mkdir('fits/badFits/{0}'.format(name))
-            cBad.Print('fits/badFits/{0}/badFit_{0}_{1}.png'.format(name, varName))
+            python_mkdir('fits_{0}/badFits/{1}'.format(obj,name))
+            cBad.Print('fits_{0}/badFits/{1}/badFit_{1}_{2}.png'.format(obj,name, varName))
 
     ROOT.TNamed('cutString', cutString).Write()
     print
     ROOT.gDirectory.cd('..')
 
-def fit(name, allProbeCondition, passingProbeCondition, binningMap, macroVariables, tmc=None, tmcAlt=None, tdata=None):
+def fit(name, allProbeCondition, passingProbeCondition, binningMap, macroVariables, tmc=None, tmcAlt=None, tdata=None, obj=''):
     ROOT.gDirectory.mkdir(name).cd()
     ROOT.TNamed('variables', ', '.join(macroVariables)).Write()
     for binName, cut in sorted(binningMap.items()) :
-        fitBin(name+'_'+binName, allProbeCondition+cut, passingProbeCondition, tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fitBin(name+'_'+binName, allProbeCondition+cut, passingProbeCondition, tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=obj)
     ROOT.gDirectory.cd('..')
 
 def runfit(args):
@@ -173,17 +173,17 @@ def runfit(args):
     commonVars = ['float {0}'.format(ptVar[args.object]), 'float {0}'.format(etaVar[args.object])]
 
     # run the fits
-    fout = ROOT.TFile('fits.root', 'recreate')
+    fout = ROOT.TFile('fits_{0}.root'.format(args.object), 'recreate')
     fout.mkdir('{0}Fits'.format(args.object)).cd()
 
     if args.object=='electron':
-        fit('CutBasedIDVeto',   [], 'passingVeto',   binning, commonVars+['bool passingVeto'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-        fit('CutBasedIDLoose',  [], 'passingLoose',  binning, commonVars+['bool passingLoose'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-        fit('CutBasedIDMedium', [], 'passingMedium', binning, commonVars+['bool passingMedium'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-        fit('CutBasedIDTight',  [], 'passingTight',  binning, commonVars+['bool passingTight'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('CutBasedIDVeto',   [], 'passingVeto',   binning, commonVars+['bool passingVeto'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('CutBasedIDLoose',  [], 'passingLoose',  binning, commonVars+['bool passingLoose'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('CutBasedIDMedium', [], 'passingMedium', binning, commonVars+['bool passingMedium'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('CutBasedIDTight',  [], 'passingTight',  binning, commonVars+['bool passingTight'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
     if args.object=='muon':
-        fit('MediumID',   [], 'passingMedium',   binning, commonVars+['bool passingMedium'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
-        fit('TightID',   [], 'passingTight',   binning, commonVars+['bool passingTight'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata)
+        fit('MediumID',   [], 'passingMedium',   binning, commonVars+['bool passingMedium'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('TightID',    [], 'passingTight',    binning, commonVars+['bool passingTight'],    tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
 
 
 def parse_command_line(argv):

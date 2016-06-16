@@ -16,7 +16,7 @@ def plot(args):
     etabins = getBinning(args.object,'eta')
     colors = [ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10]
     
-    ROOT.gROOT.ProcessLine('.L fits/{id}/{id}.C+'.format(id=args.idName))
+    ROOT.gROOT.ProcessLine('.L fits_{obj}/{id}/{id}.C+'.format(obj=args.object,id=args.idName))
     
     variations = [
         ROOT.STAT_UP,
@@ -63,8 +63,8 @@ def plot(args):
         entry.SetOption('lp')
     leg.SetHeader(args.idNameNice)
     
-    canvas.Print('fits/{0}/scaleFactor_vs_pt.png'.format(args.idName))
-    canvas.Print('fits/{0}/scaleFactor_vs_pt.root'.format(args.idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.png'.format(args.object,args.idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.root'.format(args.object,args.idName))
 
     # eta bins
     xbins = array.array('d', [0.5*sum(etabins[i:i+2]) for i in range(len(etabins)-1)])
@@ -96,8 +96,8 @@ def plot(args):
         entry.SetOption('lp')
     leg.SetHeader(args.idNameNice)
     
-    canvas.Print('fits/{0}/scaleFactor_vs_eta.png'.format(args.idName))
-    canvas.Print('fits/{0}/scaleFactor_vs_eta.root'.format(args.idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.png'.format(args.object,args.idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.root'.format(args.object,args.idName))
     
     # ------- Latex
     def formatValue(var, varerr, etabin, ptbin) :
@@ -151,7 +151,7 @@ def plot(args):
     \\end{table}
     %% Generated with DiBosonTP version %s
     ''' % (args.idName, __gitversion__)
-    with open('fits/{0}/table.tex'.format(args.idName), 'w') as fout :
+    with open('fits_{0}/{1}/table.tex'.format(args.object,args.idName), 'w') as fout :
         fout.write(output)
 
 
