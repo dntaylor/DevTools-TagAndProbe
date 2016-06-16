@@ -76,6 +76,12 @@ process.source = cms.Source("PoolSource",
 
 process.maxEvents = cms.untracked.PSet( input = options['MAXEVENTS'])
 
+process.sampleInfo = cms.EDProducer("tnp::SampleInfoTree",
+                                        #vertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices"),
+                                        genInfo = cms.InputTag("generator")
+                                        )
+
+
 ##########
 ### ID ###
 ##########
@@ -390,6 +396,7 @@ if varOptions.isMC :
 #    process.source.lumisToProcess = LumiList.LumiList(filename = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/13TeV/'+options['json']).getVLuminosityBlockRange()
 
 process.p = cms.Path(
+    process.sampleInfo *
     process.idEmbedSequence *
     (process.tagMuons + process.probeMuons) *
     (process.tagMuonsTriggerMatched + process.probeTriggerSeq) *
