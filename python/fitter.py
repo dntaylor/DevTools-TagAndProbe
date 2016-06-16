@@ -8,6 +8,7 @@ import ROOT
 ROOT.gROOT.SetBatch(True)
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from DevTools.TagAndProbe.PassFailSimulFitter import PassFailSimulFitter
+from DevTools.Utilities.utilities import python_mkdir
 
 logging.basicConfig(level=logging.INFO, stream=sys.stderr, format='%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -47,15 +48,15 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     fitter.setPdf(pdfDefinition)
 
     print '-'*40, 'Central value fit'
-    fitter.addDataFromTree(tdata, 'data', allProbeCondition, passingProbeCondition)
+    fitter.addDataFromTree(tdata, 'data', allProbeCondition, passingProbeCondition, weightVariable='1')
     res = fitter.fit('simPdf', 'data')
     effValue = res.floatParsFinal().find('efficiency')
     dataEff = effValue.getVal()
     dataEffErrHi = effValue.getErrorHi()
     dataEffErrLo = effValue.getErrorLo()
-    scaleFactor = dataEff / mcEff
-    maxSf = (dataEff+dataEffErrHi)/mcEffLo
-    minSf = (dataEff+dataEffErrLo)/mcEffHi
+    scaleFactor = dataEff / mcEff if mcEff else 0.
+    maxSf = (dataEff+dataEffErrHi)/mcEffLo if mcEffLo else 0.
+    minSf = (dataEff+dataEffErrLo)/mcEffHi if mcEffHi else 0.
     res.SetName('fitresults')
     c = fitter.drawFitCanvas(res)
     c.Write()
@@ -69,7 +70,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     resAlt.Write()
 
     print '-'*40, 'Fit with tag pt > 30 (vs. 25)'
-    fitter.addDataFromTree(tdata, 'dataTagPt30', allProbeCondition+['tag_Ele_pt>30'], passingProbeCondition)
+    fitter.addDataFromTree(tdata, 'dataTagPt30', allProbeCondition+['tag_Ele_pt>30'], passingProbeCondition, weightVariable='1')
     resTagPt30 = fitter.fit('simPdf', 'dataTagPt30')
     dataTagPt30Eff = resTagPt30.floatParsFinal().find('efficiency').getVal()
     resTagPt30.Write()
@@ -101,7 +102,8 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
         print '  Variation {:>15s} : {:.4f}, edm={:f}, status={:s}'.format(varName, value, fitResult.edm(), statusInfo(fitResult))
         if 'STAT' not in varName and 'EFF' not in varName and fitResult.statusCodeHistory(0) < 0 :
             cBad = fitter.drawFitCanvas(fitResult)
-            cBad.Print('fits/{0}/badFit_{0}_{2}.png'.format(name, varName))
+            python_mkdir('fits/{0}'.format(name))
+            cBad.Print('fits/{0}/badFit_{0}_{1}.png'.format(name, varName))
 
     ROOT.TNamed('cutString', cutString).Write()
     print
@@ -135,13 +137,13 @@ def runfit(args):
 
     # binning for the efficiencies
     ptBinMap = {
-        'electron' : [10, 20, 30, 40, 50, 13000],
-        'muon'     : [10, 20, 30, 40, 50, 13000],
+        'electron' : [10, 20, 30, 40, 50, 1000],
+        'muon'     : [10, 20, 30, 40, 50, 1000],
     }
 
     etaBinMap = {
         'electron' : [0., 0.8, 1.479, 2.0, 2.5],
-        'muon'     : [0., 0.9, 1.2,   2.1, 2.4],
+        'muon'     : [-2.4, -2.1, -1.6, -1.2, -0.9, -0.3, -0.2, 0.2, 0.3, 0.9, 1.2, 1.6, 2.1, 2.4],
     }
 
     ptVar = {
@@ -151,7 +153,7 @@ def runfit(args):
 
     etaVar = {
         'electron' : 'probe_Ele_abseta',
-        'muon'     : 'probe_abseta',
+        'muon'     : 'probe_eta',
     }
 
     binning = {}
