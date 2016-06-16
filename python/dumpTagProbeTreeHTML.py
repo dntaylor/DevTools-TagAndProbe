@@ -8,6 +8,8 @@ from DevTools.Utilities.utilities import python_mkdir
 
 __gitversion__ = subprocess.check_output(["git", "describe", "--always"]).strip()
 
+j=0
+
 def rootFileType(string) :
     file = ROOT.TFile.Open(string)
     if not file :
@@ -191,6 +193,9 @@ def parseEfficiencyBin(effBinDir, outputDirectory) :
 
     binName = effBinDir.GetName()
 
+    global j
+    j += 1
+    idname = 'plot{0}'.format(j)
     row = HTML.effTableRow.format(
             fitStatusColor=fitStatusColor,
             efficiencyNice='%.4f +%.4f %.4f' % (dataEff, dataEffErrHi, dataEffErrLo),
@@ -202,10 +207,12 @@ def parseEfficiencyBin(effBinDir, outputDirectory) :
             numSignalAll=fitResults.floatParsFinal().find('numSignalAll').getVal(),
             nll=nll,
             fitStatus=':'.join(['%d' % fitResults.statusCodeHistory(i) for i in range(fitResults.numStatusHistory())]),
+            idname=idname,
         )
-    row += '''<tr><td colspan="7" style="text-align: center;"><img src="{effName}/{binName}_small.png"></td></tr>'''.format(
+    row += '''<tr class="collapse" id="{idname}"><td colspan="7" style="text-align: center;"><img src="{effName}/{binName}_small.png"></td></tr>'''.format(
             effName=effBinDir.GetDirectory('..').GetName(),
             binName=binName,
+            idname=idname,
         )
 
     codeRow = effBinDir.Get('cutString').GetTitle()
@@ -238,6 +245,9 @@ class HTML :
             width: 100%;
         }}
     </style>
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 </head>
 <body>
 <h2>Efficiency summary for {rootFile}/{baseDirectory}</h2>
@@ -257,6 +267,7 @@ class HTML :
             <td>Fit status <a href="https://root.cern.ch/root/htmldoc/ROOT__Minuit2__Minuit2Minimizer.html#ROOT__Minuit2__Minuit2Minimizer:Minimize">?</a></td>
             <td>Fit signal yield</td>
             <td>Extras</td>
+            <td>Show plot</td>
         </tr>
         {tableRows}
     </table>
@@ -271,6 +282,7 @@ class HTML :
             <td>{fitStatus}</td>
             <td>{numSignalAll:.0f}</td>
             <td><a href="{effName}/{binName}.parameters.txt">Params</a> <a href="{effName}/{binName}_correlation.png">Corr.</a> NLL: {nll:.0f}</td>
+            <td><button type="button" class="btn btn-info" data-toggle="collapse" data-target="#{idname}">Expand</button></td>
         </tr>'''
 
 
