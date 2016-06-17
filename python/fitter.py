@@ -80,11 +80,11 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     resAlt.SetName('fitresults_systAltTemplate')
     resAlt.Write()
 
-    print '-'*40, 'Fit with tag pt > 30 (vs. 25)'
-    fitter.addDataFromTree(tdata, 'dataTagPt30', allProbeCondition+['tag_Ele_pt>30'], passingProbeCondition, weightVariable='1')
-    resTagPt30 = fitter.fit('simPdf', 'dataTagPt30')
-    dataTagPt30Eff = resTagPt30.floatParsFinal().find('efficiency').getVal()
-    resTagPt30.Write()
+    #print '-'*40, 'Fit with tag pt > 30 (vs. 25)'
+    #fitter.addDataFromTree(tdata, 'dataTagPt30', allProbeCondition+['tag_Ele_pt>30'], passingProbeCondition, weightVariable='1')
+    #resTagPt30 = fitter.fit('simPdf', 'dataTagPt30')
+    #dataTagPt30Eff = resTagPt30.floatParsFinal().find('efficiency').getVal()
+    #resTagPt30.Write()
 
     print '-'*40, 'Fit with CMSShape background (vs. Bernstein)'
     resCMSBkg = fitter.fit('simCMSBkgPdf', 'data')
@@ -99,7 +99,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
             'STAT_UP'  : (maxSf, res),
             'STAT_DOWN': (minSf, res),
             'SYST_ALT_TEMPL' : (dataAltEff / mcEff if mcEff else 0., resAlt),
-            'SYST_TAG_PT30' : (dataTagPt30Eff / mcEff if mcEff else 0., resTagPt30),
+            #'SYST_TAG_PT30' : (dataTagPt30Eff / mcEff if mcEff else 0., resTagPt30),
             'SYST_CMSSHAPE' : (dataCMSBkgEff / mcEff if mcEff else 0., resCMSBkg),
             'EFF_DATA' : (dataEff, res),
             'EFF_DATA_ERRSYM' : ((dataEffErrHi-dataEffErrLo)/2, res),
@@ -120,11 +120,73 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     print
     ROOT.gDirectory.cd('..')
 
-def fit(name, allProbeCondition, passingProbeCondition, binningMap, macroVariables, tmc=None, tmcAlt=None, tdata=None, obj=''):
+def fitBinAlt(name, allProbeCondition, passingProbeCondition, tdata=None, obj=''):
+    fitVariable = ROOT.RooRealVar('mass', 'TP Pair Mass', 60, 120, 'GeV')
+    fitVariable.setBins(60)
+
+    ROOT.gDirectory.mkdir(name).cd()
+    fitter = PassFailSimulFitter(name, fitVariable)
+
+    fitter.setPdf(pdfDefinitionAlt)
+
+    print '-'*40, 'Central value fit'
+    fitter.addDataFromTree(tdata, 'data', allProbeCondition, passingProbeCondition, weightVariable='1')
+    res = fitter.fit('simPdf', 'data')
+    effValue = res.floatParsFinal().find('efficiency')
+    dataEff = effValue.getVal()
+    dataEffErrHi = effValue.getErrorHi()
+    dataEffErrLo = effValue.getErrorLo()
+    res.SetName('fitresults')
+    c = fitter.drawFitCanvas(res)
+    c.Write()
+    h.Write()
+    res.Write()
+
+    #print '-'*40, 'Fit with tag pt > 30 (vs. 25)'
+    #fitter.addDataFromTree(tdata, 'dataTagPt30', allProbeCondition+['tag_Ele_pt>30'], passingProbeCondition, weightVariable='1')
+    #resTagPt30 = fitter.fit('simPdf', 'dataTagPt30')
+    #dataTagPt30Eff = resTagPt30.floatParsFinal().find('efficiency').getVal()
+    #resTagPt30.Write()
+
+    print '-'*40, 'Fit with CMSShape background (vs. Bernstein)'
+    resCMSBkg = fitter.fit('simCMSBkgPdf', 'data')
+    dataCMSBkgEff = resCMSBkg.floatParsFinal().find('efficiency').getVal()
+    resCMSBkg.Write()
+
+    fitter.workspace.Write()
+    print name, ': Data=%.2f, MC=%.2f, Ratio=%.2f' % (dataEff, mcEff, scaleFactor)
+    condition = ' && '.join(allProbeCondition+[passingProbeCondition])
+    variations = {
+            'CENTRAL'  : (dataEff, res),
+            'STAT_UP'  : (dataEff+dataEffErrHi, res),
+            'STAT_DOWN': (dataEff-dataEffErrLo, res),
+            #'SYST_TAG_PT30' : (dataTagPt30Eff / dataEff if dataEff else 0., resTagPt30),
+            'SYST_CMSSHAPE' : (dataCMSBkgEff / dataEff if dataEff else 0., resCMSBkg),
+            'EFF_DATA' : (dataEff, res),
+            'EFF_DATA_ERRSYM' : ((dataEffErrHi-dataEffErrLo)/2, res),
+            }
+    cutString = ''
+    for varName, value in variations.items() :
+        (value, fitResult) = value
+        cutString += '    if ( variation == Variation::%s && (%s) ) return %f;\n' % (varName, condition, value)
+        print '  Variation {:>15s} : {:.4f}, edm={:f}, status={:s}'.format(varName, value, fitResult.edm(), statusInfo(fitResult))
+        if 'STAT' not in varName and 'EFF' not in varName and fitResult.statusCodeHistory(0) < 0 :
+            cBad = fitter.drawFitCanvas(fitResult)
+            python_mkdir('fits_{0}/badFits/{1}'.format(obj,name))
+            cBad.Print('fits_{0}/badFits/{1}/badFit_{1}_{2}.png'.format(obj,name, varName))
+
+    ROOT.TNamed('cutString', cutString).Write()
+    print
+    ROOT.gDirectory.cd('..')
+
+def fit(name, allProbeCondition, passingProbeCondition, binningMap, macroVariables, tmc=None, tmcAlt=None, tdata=None, obj='', alt=False):
     ROOT.gDirectory.mkdir(name).cd()
     ROOT.TNamed('variables', ', '.join(macroVariables)).Write()
     for binName, cut in sorted(binningMap.items()) :
-        fitBin(name+'_'+binName, allProbeCondition+cut, passingProbeCondition, tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=obj)
+        if alt:
+            fitBinAlt(name+'_'+binName, allProbeCondition+cut, passingProbeCondition, tdata=tdata, obj=obj)
+        else:
+            fitBin(name+'_'+binName, allProbeCondition+cut, passingProbeCondition, tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=obj)
     ROOT.gDirectory.cd('..')
 
 def runfit(args):
