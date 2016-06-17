@@ -29,7 +29,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     fitVariable = ROOT.RooRealVar('mass', 'TP Pair Mass', 60, 120, 'GeV')
     fitVariable.setBins(60)
 
-    mcTruthCondition = ['mcTrue']
+    #mcTruthCondition = ['mcTrue']
     mcTruthCondition = []
 
     ROOT.gDirectory.mkdir(name).cd()
@@ -38,6 +38,8 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     fitter.addDataFromTree(tmcAlt, 'mcAltData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True)
     nMCPass = fitter.workspace.data('mcDataPass').sumEntries()
     nMCFail = fitter.workspace.data('mcDataFail').sumEntries()
+    if nMCPass!=nMCPass or nMCFail!=nMCFail:
+        print 'WARNING NaN: {0}'.format(name)
     mcEff = nMCPass/(nMCPass+nMCFail) if nMCPass+nMCFail else 0.
     mcEffLo = ROOT.TEfficiency.ClopperPearson(int(nMCPass+nMCFail), int(nMCPass), 0.68, False)
     mcEffHi = ROOT.TEfficiency.ClopperPearson(int(nMCPass+nMCFail), int(nMCPass), 0.68, True)
@@ -136,6 +138,7 @@ def runfit(args):
     fdata = ROOT.TFile.Open(args.dataFileName)
     tdata = fdata.Get(treeNameMap[args.object])
 
+
     # binning for the efficiencies
     ptBinMap = {
         'electron' : getBinning('electron','pt'),
@@ -146,6 +149,17 @@ def runfit(args):
         'electron' : getBinning('electron','eta'),
         'muon'     : getBinning('muon','eta'),
     }
+
+    # single bin
+    #ptBinMap = {
+    #    'electron' : [10,200],
+    #    'muon'     : [10,200],
+    #}
+
+    #etaBinMap = {
+    #    'electron' : [-2.5,2.5],
+    #    'muon'     : [-2.4,2.4],
+    #}
 
     ptVar = {
         'electron' : 'probe_Ele_pt',
@@ -182,8 +196,8 @@ def runfit(args):
         fit('CutBasedIDMedium', [], 'passingMedium', binning, commonVars+['bool passingMedium'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
         fit('CutBasedIDTight',  [], 'passingTight',  binning, commonVars+['bool passingTight'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
     if args.object=='muon':
-        fit('MediumID',   [], 'passingMedium',   binning, commonVars+['bool passingMedium'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('TightID',    [], 'passingTight',    binning, commonVars+['bool passingTight'],    tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('MediumID',         [], 'passingMedium', binning, commonVars+['bool passingMedium'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('TightID',          [], 'passingTight',  binning, commonVars+['bool passingTight'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
 
 
 def parse_command_line(argv):
