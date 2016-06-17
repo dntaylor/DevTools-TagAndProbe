@@ -21,6 +21,14 @@ with open('{0}/src/DevTools/TagAndProbe/data/pdfDefinitions.txt'.format(os.envir
             continue
         pdfDefinition.append(line)
 
+pdfDefinitionAlt = []
+with open('{0}/src/DevTools/TagAndProbe/data/pdfDefinitions_alt.txt'.format(os.environ['CMSSW_BASE'])) as defFile :
+    for line in defFile :
+        line = line.strip()
+        if len(line) == 0 or line[0] is '#' :
+            continue
+        pdfDefinitionAlt.append(line)
+
 def statusInfo(fitResults):
     fitStatus=':'.join(['% d' % fitResults.statusCodeHistory(i) for i in range(fitResults.numStatusHistory())]),
     return fitStatus
