@@ -67,8 +67,22 @@ class PassFailSimulFitter :
         hfail = hpass.Clone(dataName+'_failed_probes')
         if type(allProbeCondition) is list :
             allProbeCondition = '&&'.join(allProbeCondition)
-        tree.Draw('mass >> %s_passed_probes' % dataName, '%s*(%s)*(%s)' % (weightVariable, allProbeCondition, passingProbeCondition), 'goff')
-        tree.Draw('mass >> %s_failed_probes' % dataName, '%s*(%s)*!(%s)' % (weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+        #tree.Draw('mass >> {0}_passed_probes'.format(dataName), '{0}*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+        #tree.Draw('mass >> {0}_failed_probes'.format(dataName), '{0}*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+
+        tree.Draw('>> %s_entrylist_passed' % dataName, '(%s)*(%s)' % (allProbeCondition, passingProbeCondition), 'entrylist')
+        tree.Draw('>> %s_entrylist_failed' % dataName, '(%s)*!(%s)' % (allProbeCondition, passingProbeCondition), 'entrylist')
+        skimpass = ROOT.gDirectory.Get('%s_entrylist_passed' % dataName)
+        skimfail = ROOT.gDirectory.Get('%s_entrylist_failed' % dataName)
+        for p in xrange(skimpass.GetN()):
+            tree.GetEntry(skimpass.Next())
+            if hasattr(tree,'totWeight') and abs(tree.totWeight)>99999: continue # protect against inf
+            hpass.Fill(tree.mass,getattr(tree,weightVariable) if hasattr(tree,weightVariable) else 1.)
+        for f in xrange(skimfail.GetN()):
+            tree.GetEntry(skimfail.Next())
+            if hasattr(tree,'totWeight') and abs(tree.totWeight)>99999: continue # protect against inf
+            hfail.Fill(tree.mass,getattr(tree,weightVariable) if hasattr(tree,weightVariable) else 1.)
+
         self.setData(dataName, hpass, hfail, separatePassFail)
 
     def fit(self, pdfName, dataName, reInitializeParameters = True) :
