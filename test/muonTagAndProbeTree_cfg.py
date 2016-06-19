@@ -353,6 +353,7 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
     tagProbePairs = cms.InputTag("tpPairs"),
     arbitration   = cms.string("Random2"),
     flags         = cms.PSet(
+        passingLoose = cms.string("isLooseMuon"),
         passingMedium = cms.string("isMediumMuon"),
         passingTight  = cms.string("userInt('isTightMuon')==1"), 
         passingIsoLoose = cms.string(isolationDef+" < 0.4"),

@@ -85,7 +85,7 @@ class PassFailSimulFitter :
 
         self.setData(dataName, hpass, hfail, separatePassFail)
 
-    def fit(self, pdfName, dataName, reInitializeParameters = True) :
+    def fit(self, pdfName, dataName, reInitializeParameters = True, doCutAndCount = False) :
         w = self.workspace
         rf = ROOT.RooFit
         pdf = w.pdf(pdfName)
@@ -124,6 +124,17 @@ class PassFailSimulFitter :
             rf.PrintLevel(0),
             rf.Minimizer("Minuit2","Migrad"),
         ]
+
+        if doCutAndCount:
+            eff = nPass/(nPass+nFail) if nPass+nFail else 0.
+            # Use Clopper-Pearson
+            alpha = (1.0 - .68540158589942957)/2;
+            lo = ROOT.Math.beta_quantile(alpha, nPass, nFail+1 ) if nPass else 0.
+            hi = ROOT.Math.beta_quantile(1-alpha, nPass+1, nFail) if nFail else 1.
+            w.var('efficiency').setVal(eff)
+            w.var('efficiency').setAsymError(lo-eff,hi-eff)
+            return w.var('efficiency')
+        
         result = pdf.fitTo(data, *args)
         # Make title more computer-friendly
         result.SetTitle('%s;%s' % (pdfName, dataName))
