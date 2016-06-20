@@ -156,6 +156,19 @@ process.probeTriggersTkMu8Leg = process.probeTriggersMu17Leg.clone()
 process.probeTriggersTkMu8Leg.filterNames = cms.vstring("hltDiMuonGlb17Trk8RelTrkIsoFiltered0p4", "hltDiMuonGlbFiltered17TrkFiltered8")
 process.probeTriggerSeq += process.probeTriggersTkMu8Leg
 
+process.probeTriggersMu8ORTkMu8Leg = process.probeTriggersMu17Leg.clone()
+process.probeTriggersMu8ORTkMu8Leg.filterNames = cms.vstring("hltL3pfL1sDoubleMu114L1f0L2pf0L3PreFiltered8", "hltDiMuonGlbFiltered17TrkFiltered8")
+process.probeTriggersMu8ORTkMu8Leg.isAND = cms.bool(False)
+process.probeTriggerSeq += process.probeTriggersMu8ORTkMu8Leg
+
+#process.probeTriggersMu8ORTkMu8Leg = cms.EDProducer("CandViewMerger",
+#    src = cms.VInputTag(
+#        "probeTriggersMu8Leg",
+#        "probeTriggersTkMu8Leg",
+#    ),
+#)
+#process.probeTriggerSeq += process.probeTriggersMu8ORTkMu8Leg
+
 # IsoMu
 process.probeTriggersIsoMu18 = process.probeTriggersMu17Leg.clone()
 process.probeTriggersIsoMu18.filterNames = cms.vstring("hltL3crIsoL1sMu16L1f0L2f10QL3f18QL3trkIsoFiltered0p09")
@@ -205,6 +218,37 @@ process.probeTriggerSeq += process.probeTriggersIsoTkMu24
 process.probeTriggersIsoTkMu27 = process.probeTriggersMu17Leg.clone()
 process.probeTriggersIsoTkMu27.filterNames = cms.vstring("hltL3fL1sMu22Or25L1f0Tkf27QL3trkIsoFiltered0p09")
 process.probeTriggerSeq += process.probeTriggersIsoTkMu27
+
+# ORs
+process.probeTriggersIsoMu18ORIsoTkMu18 = process.probeTriggersMu8ORTkMu8Leg.clone()
+process.probeTriggersIsoMu18ORIsoTkMu18.filterNames = cms.vstring("hltL3crIsoL1sMu16L1f0L2f10QL3f18QL3trkIsoFiltered0p09","hltL3fL1sMu16L1f0Tkf18QL3trkIsoFiltered0p09")
+#process.probeTriggersIsoMu18ORIsoTkMu18.src = cms.VInputTag("probeTriggersIsoMu18","probeTriggersIsoTkMu18")
+process.probeTriggerSeq += process.probeTriggersIsoMu18ORIsoTkMu18
+
+process.probeTriggersIsoMu20ORIsoTkMu20 = process.probeTriggersMu8ORTkMu8Leg.clone()
+process.probeTriggersIsoMu20ORIsoTkMu20.filterNames = cms.vstring("hltL3crIsoL1sMu18L1f0L2f10QL3f20QL3trkIsoFiltered0p09","hltL3fL1sMu18L1f0Tkf20QL3trkIsoFiltered0p09")
+#process.probeTriggersIsoMu20ORIsoTkMu20.src = cms.VInputTag("probeTriggersIsoMu20","probeTriggersIsoTkMu20")
+process.probeTriggerSeq += process.probeTriggersIsoMu20ORIsoTkMu20
+
+process.probeTriggersIsoMu22ORIsoTkMu22 = process.probeTriggersMu8ORTkMu8Leg.clone()
+process.probeTriggersIsoMu22ORIsoTkMu22.filterNames = cms.vstring("hltL3crIsoL1sMu20L1f0L2f10QL3f22QL3trkIsoFiltered0p09","hltL3fL1sMu20L1f0Tkf22QL3trkIsoFiltered0p09")
+#process.probeTriggersIsoMu22ORIsoTkMu22.src = cms.VInputTag("probeTriggersIsoMu22","probeTriggersIsoTkMu22")
+process.probeTriggerSeq += process.probeTriggersIsoMu22ORIsoTkMu22
+
+process.probeTriggersIsoMu22Eta2p1ORIsoTkMu22Eta2p1 = process.probeTriggersMu8ORTkMu8Leg.clone()
+process.probeTriggersIsoMu22Eta2p1ORIsoTkMu22Eta2p1.filterNames = cms.vstring("hltL3crIsoL1sSingleMu20erL1f0L2f10QL3f22QL3trkIsoFiltered0p09","hltL3fL1sMu20erL1f0Tkf22QL3trkIsoFiltered0p09")
+#process.probeTriggersIsoMu22Eta2p1ORIsoTkMu22Eta2p1.src = cms.VInputTag("probeTriggersIsoMu22Eta2p1","probeTriggersIsoTkMu22Eta2p1")
+process.probeTriggerSeq += process.probeTriggersIsoMu22Eta2p1ORIsoTkMu22Eta2p1
+
+process.probeTriggersIsoMu24ORIsoTkMu24 = process.probeTriggersMu8ORTkMu8Leg.clone()
+process.probeTriggersIsoMu24ORIsoTkMu24.filterNames = cms.vstring("hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09","hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09")
+#process.probeTriggersIsoMu24ORIsoTkMu24.src = cms.VInputTag("probeTriggersIsoMu24","probeTriggersIsoTkMu24")
+process.probeTriggerSeq += process.probeTriggersIsoMu24ORIsoTkMu24
+
+process.probeTriggersIsoMu27ORIsoTkMu27 = process.probeTriggersMu8ORTkMu8Leg.clone()
+process.probeTriggersIsoMu27ORIsoTkMu27.filterNames = cms.vstring("hltL3crIsoL1sMu22Or25L1f0L2f10QL3f27QL3trkIsoFiltered0p09","hltL3fL1sMu22Or25L1f0Tkf27QL3trkIsoFiltered0p09")
+#process.probeTriggersIsoMu27ORIsoTkMu27.src = cms.VInputTag("probeTriggersIsoMu27","probeTriggersIsoTkMu27")
+process.probeTriggerSeq += process.probeTriggersIsoMu27ORIsoTkMu27
 
 
 ###################################################################
@@ -363,6 +407,7 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         #passingMu17L1Match = cms.InputTag("probeTriggersMu17LegL1Mu12"),
         passingMu8= cms.InputTag("probeTriggersMu8Leg"),
         passingTkMu8 = cms.InputTag("probeTriggersTkMu8Leg"),
+        passingMu8ORTkMu8= cms.InputTag("probeTriggersMu8ORTkMu8Leg"),
         passingIsoMu18 = cms.InputTag("probeTriggersIsoMu18"),
         passingIsoMu20 = cms.InputTag("probeTriggersIsoMu20"),
         passingIsoMu22 = cms.InputTag("probeTriggersIsoMu22"),
@@ -375,6 +420,12 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
         passingIsoTkMu22Eta2p1 = cms.InputTag("probeTriggersIsoTkMu22Eta2p1"),
         passingIsoTkMu24 = cms.InputTag("probeTriggersIsoTkMu24"),
         passingIsoTkMu27 = cms.InputTag("probeTriggersIsoTkMu27"),
+        passingIsoMu18ORIsoTkMu18 = cms.InputTag("probeTriggersIsoMu18ORIsoTkMu18"),
+        passingIsoMu20ORIsoTkMu20 = cms.InputTag("probeTriggersIsoMu20ORIsoTkMu20"),
+        passingIsoMu22ORIsoTkMu22 = cms.InputTag("probeTriggersIsoMu22ORIsoTkMu22"),
+        passingIsoMu22Eta2p1ORIsoTkMu22Eta2p1 = cms.InputTag("probeTriggersIsoMu22Eta2p1ORIsoTkMu22Eta2p1"),
+        passingIsoMu24ORIsoTkMu24 = cms.InputTag("probeTriggersIsoMu24ORIsoTkMu24"),
+        passingIsoMu27ORIsoTkMu27 = cms.InputTag("probeTriggersIsoMu27ORIsoTkMu27"),
     ),
     allProbes     = cms.InputTag("probeMuons"),
     )
