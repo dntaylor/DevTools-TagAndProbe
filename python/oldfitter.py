@@ -14,7 +14,6 @@ options.register(
 
 options.register(
     "inputFileName",
-    #"/afs/cern.ch/work/i/ishvetso/public/for_Matteo/TnPTree_mc-powheg.root",
     "TnPTree_mc.root",
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
@@ -23,16 +22,23 @@ options.register(
 
 options.register(
     "outputFileName",
-    "test",
+    "",
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "Output filename"
     )
 
 options.register(
+    "conditions",
+    "",
+    VarParsing.multiplicity.list,
+    VarParsing.varType.string,
+    "Additional binned categories (set true)"
+    )
+
+options.register(
     "idName",
     "passingTight",
-    #"passingTrigWP90",
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "ID variable name as in the fitter_tree"
@@ -40,18 +46,34 @@ options.register(
 
 options.register(
     "dirName",
-    "GsfElectronToRECO",
+    "muonEffs",
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "Folder name containing the fitter_tree"
     )
 
 options.register(
+    "mcTemplateFile",
+    "",
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.string,
+    "MC Templates for fit"
+    )
+
+options.register(
     "doCutAndCount",
-    False,
+    True,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     "Perform cut and count efficiency measurement"
+    )
+
+options.register(
+    "startEfficiency",
+    0.9,
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.float,
+    "Adjust default efficiency used to seed the start of fit"
     )
 
 options.parseArguments()
@@ -80,28 +102,31 @@ else:
 ################################################
 
 EfficiencyBins = cms.PSet(
-    #probe_Ele_eta = cms.vdouble( -2.5, -1.566, -1.4442, -0.8, 0.0, 0.8, 1.4442, 1.566, 2.5 ),
-    #probe_Ele_pt = cms.vdouble(15., 25., 35., 45., 55., 5000.),
-    probe_Ele_eta = cms.vdouble( -2.5, 0.0, 2.5 ),
-    probe_Ele_pt = cms.vdouble(25., 35., 5000.),
+    probe_pt  = cms.vdouble( 5, 10, 15,16,17, 18, 19, 20,21,22,23,24,25,26,27,28,29,30,35, 40, 50, 100, 1000 ),
+    probe_abseta = cms.vdouble( 0.0, 0.9, 1.2, 2.1, 2.4), 
     )
 
 EfficiencyBinningSpecification = cms.PSet(
-    UnbinnedVariables = cms.vstring("mass", "totWeight") if options.isMC else cms.vstring("mass"),
-    BinnedVariables = cms.PSet(EfficiencyBins,
-                               mcTrue = cms.vstring("true")
-                               ),
+    UnbinnedVariables = cms.vstring("mass"),
+    #UnbinnedVariables = cms.vstring("mass", "totWeight"),
+    BinnedVariables = cms.PSet(EfficiencyBins),
     BinToPDFmap = cms.vstring("pdfSignalPlusBackground")  
     )
 
-if (not options.isMC):
-    EfficiencyBinningSpecification.UnbinnedVariables = cms.vstring("mass")
-    EfficiencyBinningSpecification.BinnedVariables = cms.PSet(EfficiencyBins)
+if options.mcTemplateFile :
+    for absetabin in range(len(EfficiencyBins.probe_abseta)-1) :
+        for ptbin in range(len(EfficiencyBins.probe_pt)-1) :
+            EfficiencyBinningSpecification.BinToPDFmap += [
+                    "*probe_abseta_bin%d*probe_pt_bin%d*" % (absetabin, ptbin),
+                    "pdfSignal_probe_abseta_bin%d__probe_pt_bin%d" % (absetabin, ptbin)
+                ]
 
-mcTruthModules = cms.PSet()
-if (options.isMC):
-    setattr(mcTruthModules, "MCtruth_" + options.idName, cms.PSet(EfficiencyBinningSpecification))
-    setattr(getattr(mcTruthModules, "MCtruth_" + options.idName), "EfficiencyCategoryAndState", cms.vstring(options.idName, "pass"))
+if len(options.conditions) > 0 :
+    for condition in options.conditions :
+        setattr(EfficiencyBinningSpecification.BinnedVariables, condition, cms.vstring("true"))
+
+if options.isMC :
+    setattr(EfficiencyBinningSpecification.BinnedVariables, 'mcTrue', cms.vstring("true"))
 
 ############################################################################################
 
@@ -116,53 +141,91 @@ process.TnPMeasurement = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
                                         floatShapeParameters = cms.bool(True),
                                         binnedFit = cms.bool(True),
                                         binsForFit = cms.uint32(60),
-                                        WeightVariable = cms.string("totWeight") if options.isMC else cms.string("1"),
                                         #fixVars = cms.vstring("meanP", "meanF", "sigmaP", "sigmaF", "sigmaP_2", "sigmaF_2"),
                                         
                                         # defines all the real variables of the probes available in the input tree and intended for use in the efficiencies
                                         Variables = cms.PSet(mass = cms.vstring("Tag-Probe Mass", "60.0", "120.0", "GeV/c^{2}"),
-                                                             #probe_Ele_et = cms.vstring("Probe E_{T}", "0", "1000", "GeV/c"),
-                                                             probe_Ele_eta = cms.vstring("Probe #eta", "-2.5", "2.5", ""), 
-                                                             totWeight = cms.vstring("totWeight", "-1000000000", "100000000", ""),
-                                                             #probe_Ele_e = cms.vstring("probe_Ele_e", "0", "1000", ""),
-                                                             probe_Ele_pt = cms.vstring("probe_Ele_pt", "0", "1000", ""),
-                                                             #probe_Ele_trigMVA = cms.vstring("probe_Ele_trigMVA", "-1", "1", ""),
-                                                             #passingTrigWP90 = cms.vstring("passingTrigWP90", "-1", "1", ""),
+                                                             probe_pt = cms.vstring("Probe p_{T}", "0", "1000", "GeV/c"),
+                                                             probe_abseta = cms.vstring("Probe |#eta|", "0", "2.5", ""), 
+                                                             #totWeight = cms.vstring("totWeight", "-100000000", "1000000000", ""),
                                                              ),
                                         
                                         # defines all the discrete variables of the probes available in the input tree and intended for use in the efficiency calculations
                                         Categories = cms.PSet(),
-
-                                        Expressions = cms.PSet(myeop = cms.vstring("myeop", "probe_Ele_e/probe_Ele_pt", "probe_Ele_e", "probe_Ele_pt") 
-                                                               ), 
-                                        Cuts = cms.PSet(#mvaCut = cms.vstring("probe_Ele_trigMVA", "0.5", "above"),
-                                                        #fakeEoPCut = cms.vstring("myeop", "2.", "above")
-                                                        ),
+                                        
                                         # defines all the PDFs that will be available for the efficiency calculations; 
                                         # uses RooFit's "factory" syntax;
                                         # each pdf needs to define "signal", "backgroundPass", "backgroundFail" pdfs, "efficiency[0.9,0,1]" 
                                         # and "signalFractionInPassing[0.9]" are used for initial values  
-                                        PDFs = cms.PSet(pdfSignalPlusBackground = cms.vstring(
-            "RooCBExGaussShape::signalResPass(mass,meanP[-0.0,-5.000,5.000],sigmaP[0.956,0.00,15.000],alphaP[0.999, 0.0,50.0],nP[1.405,0.000,50.000],sigmaP_2[1.000,0.500,15.00])",
-            "RooCBExGaussShape::signalResFail(mass,meanF[-0.0,-5.000,5.000],sigmaF[3.331,0.00,15.000],alphaF[1.586, 0.0,50.0],nF[0.464,0.000,20.00], sigmaF_2[1.675,0.500,12.000])",
-            "ZGeneratorLineShape::signalPhy(mass)", 
-            "RooCMSShape::backgroundPass(mass, alphaPass[60.,50.,70.], betaPass[0.001, 0.,0.1], gammaPass[0.1, 0, 1], peakPass[90.0])",
-            "RooCMSShape::backgroundFail(mass, alphaFail[60.,50.,70.], betaFail[0.001, 0.,0.1], gammaFail[0.1, 0, 1], peakFail[90.0])",
-            "FCONV::signalPass(mass, signalPhy, signalResPass)",
-            "FCONV::signalFail(mass, signalPhy, signalResFail)",     
-            "efficiency[0.5,0,1]",
+                                        PDFs = cms.PSet(
+        pdfSignalPlusBackground = cms.vstring(
+            #"RooCBExGaussShape::signalResPass(mass,meanP[0.0,-5.000,5.000],sigmaP[0.97,0.00,15.000],alphaP[1.1, 0.0,50.0],nP[3.5,0.000,50.00],sigmaP_2[1.6,0.500,15.00])",
+            #"RooCBExGaussShape::signalResFail(mass,meanF[0.0,-5.000,5.000],sigmaF[2.97,0.00,15.000],alphaF[8.0, 0.0,50.0],nF[15.,0.000,20.00],sigmaF_2[2.0,0.500,12.00])",
+            "Gaussian::signalRes(mass,meanSmearing[0.0,-5.000,5.000],sigmaSmearing[0.2,0.07,5.000])",
+            "ZGeneratorLineShape::signalPhy(mass, \"../data/ZmmGenLevel.root\")", 
+            #"RooCMSShape::backgroundPass(mass, alphaPass[70.], betaPass[0.02, 0.,0.1], gammaPass[0.1, 0, 1], peakPass[90.0])",
+            #"RooCMSShape::backgroundFail(mass, alphaFail[70.], betaFail[0.02, 0.,0.1], gammaFail[0.1, 0, 1], peakFail[90.0])",
+            "RooBernstein::backgroundPass(mass, {a0[10,0,50],a1[1,0,50],a2[1,0,50],a3[1,0,50]})",
+            "RooBernstein::backgroundFail(mass, {b0[10,0,50],b1[1,0,50],b2[1,0,50],b3[1,0,50]})",
+            "FCONV::signalPass(mass, signalPhy, signalRes)",
+            "FCONV::signalFail(mass, signalPhy, signalRes)",     
+            "efficiency[0.9,0,1]",
             "signalFractionInPassing[1.0]"     
             ),
                                                         ),
-                                        
-                                        # defines a set of efficiency calculations, what PDF to use for fitting and how to bin the data;
-                                        # there will be a separate output directory for each calculation that includes a simultaneous fit, side band subtraction and counting. 
-                                        Efficiencies = cms.PSet(mcTruthModules)
                                         )
 
+# Set categories
 setattr(process.TnPMeasurement.Categories, options.idName, cms.vstring(options.idName, "dummy[pass=1,fail=0]"))
 setattr(process.TnPMeasurement.Categories, "mcTrue", cms.vstring("MC true", "dummy[true=1,false=0]"))
+if len(options.conditions) > 0 :
+    for condition in options.conditions :
+        setattr(process.TnPMeasurement.Categories, condition, cms.vstring(condition, "dummy[true=1,false=0]"))
 
+# Actual efficiency pset
+effName = options.idName
+if options.isMC :
+    effName += '_mcTrue'
+if len(options.conditions) > 0 :
+    for condition in options.conditions :
+        effName += '_'+condition
+
+process.TnPMeasurement.Efficiencies = cms.PSet()
+setattr(process.TnPMeasurement.Efficiencies, effName, cms.PSet(
+            EfficiencyBinningSpecification,
+            EfficiencyCategoryAndState = cms.vstring(options.idName, "pass")
+            )
+       )
+
+# MC weight
+#if options.isMC :
+#    setattr(process.TnPMeasurement, 'WeightVariable', cms.string("totWeight"))
+
+# Templates
+pdfDef = cms.vstring(
+    #"Gaussian::signalResPass(mass,meanPSmearing[0.0,-5.000,5.000],sigmaPSmearing[0.2,0.07,5.000])",
+    #"Gaussian::signalResFail(mass,meanFSmearing[0.0,-5.000,5.000],sigmaFSmearing[0.2,0.07,5.000])",
+    "Gaussian::signalRes(mass,meanSmearing[0.0,-5.000,5.000],sigmaSmearing[0.2,0.07,5.000])",
+    #"RooCMSShape::backgroundPass(mass, alphaPass[70.], betaPass[0.02, 0.,0.1], gammaPass[0.1, 0, 1], peakPass[90.0])",
+    #"RooCMSShape::backgroundFail(mass, alphaFail[70.], betaFail[0.02, 0.,0.1], gammaFail[0.1, 0, 1], peakFail[90.0])",
+    "RooBernstein::backgroundPass(mass, {a0[10,0,50],a1[1,0,50],a2[1,0,50],a3[1,0,50]})",
+    "RooBernstein::backgroundFail(mass, {b0[10,0,50],b1[1,0,50],b2[1,0,50],b3[1,0,50]})",
+    "FCONV::signalPass(mass, signalPhyPass, signalRes)",
+    "FCONV::signalFail(mass, signalPhyFail, signalRes)",
+    "efficiency[%f,0,1]" % options.startEfficiency,
+    "signalFractionInPassing[1.0]"
+    )
+if options.mcTemplateFile :
+    for absetabin in range(len(EfficiencyBins.probe_abseta)-1) :
+        for ptbin in range(len(EfficiencyBins.probe_pt)-1) :
+            pdfName = "probe_abseta_bin%d__probe_pt_bin%d" % (absetabin, ptbin)
+            thisDef = cms.vstring(
+                    'ZGeneratorLineShape::signalPhyPass(mass, "%s", "%s")' % (options.mcTemplateFile, 'hMass_%s_Pass' % pdfName),
+                    'ZGeneratorLineShape::signalPhyFail(mass, "%s", "%s")' % (options.mcTemplateFile, 'hMass_%s_Fail' % pdfName)
+                )
+            setattr(process.TnPMeasurement.PDFs, 'pdfSignal_'+pdfName, thisDef+pdfDef)
+
+# switch pdf settings
 if (not options.isMC):
     for pdf in process.TnPMeasurement.PDFs.__dict__:
         param =  process.TnPMeasurement.PDFs.getParameter(pdf)
@@ -171,9 +234,6 @@ if (not options.isMC):
         for i, l in enumerate(getattr(process.TnPMeasurement.PDFs, pdf)):
             if l.find("signalFractionInPassing") != -1:
                 getattr(process.TnPMeasurement.PDFs, pdf)[i] = l.replace("[1.0]","[0.5,0.,1.]")
-        
-    setattr(process.TnPMeasurement.Efficiencies, options.idName, EfficiencyBinningSpecification)    
-    setattr(getattr(process.TnPMeasurement.Efficiencies, options.idName) , "EfficiencyCategoryAndState", cms.vstring(options.idName, "pass"))
 else:
     for pdf in process.TnPMeasurement.PDFs.__dict__:
         param =  process.TnPMeasurement.PDFs.getParameter(pdf)
@@ -188,4 +248,6 @@ else:
 process.fit = cms.Path(
     process.TnPMeasurement  
     )
+
+
 

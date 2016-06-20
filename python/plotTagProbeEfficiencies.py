@@ -26,7 +26,10 @@ def plot(args):
         ROOT.SYST_CMSSHAPE
         ]
     
-    eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
+    if 'Iso' in args.idName:
+        eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, 0., var)
+    else:
+        eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
     
     effCentral = lambda pt, eta : eff(pt, eta, ROOT.CENTRAL)
     effMax = lambda pt, eta : max(map(lambda v : eff(pt,eta,v), variations))-effCentral(pt,eta)
