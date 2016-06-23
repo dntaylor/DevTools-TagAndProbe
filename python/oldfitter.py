@@ -1,12 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 from FWCore.ParameterSet.VarParsing import VarParsing
 import sys
+from DevTools.TagAndProbe.utilities import getBinning
 
 options = VarParsing('analysis')
 
 options.register(
     "isMC",
-    True,
+    False,
     VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     "Compute MC efficiencies"
@@ -14,7 +15,7 @@ options.register(
 
 options.register(
     "inputFileName",
-    "TnPTree_mc.root",
+    "TnPTree_data.root",
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
     "Input filename"
@@ -45,20 +46,20 @@ options.register(
     )
 
 options.register(
-    "dirName",
-    "muonEffs",
+    "object",
+    "muon",
     VarParsing.multiplicity.singleton,
     VarParsing.varType.string,
-    "Folder name containing the fitter_tree"
+    "Object type"
     )
 
-options.register(
-    "mcTemplateFile",
-    "",
-    VarParsing.multiplicity.singleton,
-    VarParsing.varType.string,
-    "MC Templates for fit"
-    )
+#options.register(
+#    "mcTemplateFile",
+#    "",
+#    VarParsing.multiplicity.singleton,
+#    VarParsing.varType.string,
+#    "MC Templates for fit"
+#    )
 
 options.register(
     "doCutAndCount",
@@ -77,6 +78,11 @@ options.register(
     )
 
 options.parseArguments()
+
+treeNameMap = {
+    'electron' : 'GsfElectronToTrigger',
+    'muon'     : 'muonEffs',
+}
 
 
 process = cms.Process("TagProbe")
@@ -102,8 +108,13 @@ else:
 ################################################
 
 EfficiencyBins = cms.PSet(
-    probe_pt  = cms.vdouble( 5, 10, 15,16,17, 18, 19, 20,21,22,23,24,25,26,27,28,29,30,35, 40, 50, 100, 1000 ),
-    probe_abseta = cms.vdouble( 0.0, 0.9, 1.2, 2.1, 2.4), 
+    probe_pt  = cms.vdouble(*getBinning(options.object,'pt',trig=True)),
+    probe_eta = cms.vdouble(*getBinning(options.object,'eta',trig=True)), 
+)
+if options.object=='electron':
+    EfficiencyBins = cms.PSet(
+        probe_sc_pt  = cms.vdouble(*getBinning(options.object,'pt',trig=True)),
+        probe_sc_eta = cms.vdouble(*getBinning(options.object,'eta',trig=True)), 
     )
 
 EfficiencyBinningSpecification = cms.PSet(
@@ -113,13 +124,13 @@ EfficiencyBinningSpecification = cms.PSet(
     BinToPDFmap = cms.vstring("pdfSignalPlusBackground")  
     )
 
-if options.mcTemplateFile :
-    for absetabin in range(len(EfficiencyBins.probe_abseta)-1) :
-        for ptbin in range(len(EfficiencyBins.probe_pt)-1) :
-            EfficiencyBinningSpecification.BinToPDFmap += [
-                    "*probe_abseta_bin%d*probe_pt_bin%d*" % (absetabin, ptbin),
-                    "pdfSignal_probe_abseta_bin%d__probe_pt_bin%d" % (absetabin, ptbin)
-                ]
+#if options.mcTemplateFile :
+#    for absetabin in range(len(EfficiencyBins.probe_abseta)-1) :
+#        for ptbin in range(len(EfficiencyBins.probe_pt)-1) :
+#            EfficiencyBinningSpecification.BinToPDFmap += [
+#                    "*probe_abseta_bin%d*probe_pt_bin%d*" % (absetabin, ptbin),
+#                    "pdfSignal_probe_abseta_bin%d__probe_pt_bin%d" % (absetabin, ptbin)
+#                ]
 
 if len(options.conditions) > 0 :
     for condition in options.conditions :
@@ -132,7 +143,7 @@ if options.isMC :
 
 process.TnPMeasurement = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
                                         InputFileNames = cms.vstring(InputFileName),
-                                        InputDirectoryName = cms.string(options.dirName),
+                                        InputDirectoryName = cms.string(treeNameMap[options.object]),
                                         InputTreeName = cms.string("fitter_tree"), 
                                         OutputFileName = cms.string(OutputFile),
                                         NumCPU = cms.uint32(1),
@@ -144,11 +155,7 @@ process.TnPMeasurement = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
                                         #fixVars = cms.vstring("meanP", "meanF", "sigmaP", "sigmaF", "sigmaP_2", "sigmaF_2"),
                                         
                                         # defines all the real variables of the probes available in the input tree and intended for use in the efficiencies
-                                        Variables = cms.PSet(mass = cms.vstring("Tag-Probe Mass", "60.0", "120.0", "GeV/c^{2}"),
-                                                             probe_pt = cms.vstring("Probe p_{T}", "0", "1000", "GeV/c"),
-                                                             probe_abseta = cms.vstring("Probe |#eta|", "0", "2.5", ""), 
-                                                             #totWeight = cms.vstring("totWeight", "-100000000", "1000000000", ""),
-                                                             ),
+                                        #Variables = cms.PSet(),
                                         
                                         # defines all the discrete variables of the probes available in the input tree and intended for use in the efficiency calculations
                                         Categories = cms.PSet(),
@@ -174,6 +181,19 @@ process.TnPMeasurement = cms.EDAnalyzer("TagProbeFitTreeAnalyzer",
             ),
                                                         ),
                                         )
+if options.object=='muon':
+    setattr(process.TnPMeasurement, 'Variables', cms.PSet(mass = cms.vstring("Tag-Probe Mass", "60.0", "120.0", "GeV/c^{2}"),
+                                                          probe_pt = cms.vstring("Probe p_{T}", "0", "1000", "GeV/c"),
+                                                          probe_eta = cms.vstring("Probe #eta", "0", "2.5", ""),
+                                                          #totWeight = cms.vstring("totWeight", "-100000000", "1000000000", ""),
+                                                          ))
+if options.object=='electron':
+    setattr(process.TnPMeasurement, 'Variables', cms.PSet(mass = cms.vstring("Tag-Probe Mass", "60.0", "120.0", "GeV/c^{2}"),
+                                                          probe_sc_pt = cms.vstring("Probe p_{T}", "0", "1000", "GeV/c"),
+                                                          probe_sc_eta = cms.vstring("Probe #eta", "0", "2.5", ""),
+                                                          #totWeight = cms.vstring("totWeight", "-100000000", "1000000000", ""),
+                                                          ))
+
 
 # Set categories
 setattr(process.TnPMeasurement.Categories, options.idName, cms.vstring(options.idName, "dummy[pass=1,fail=0]"))
@@ -215,15 +235,15 @@ pdfDef = cms.vstring(
     "efficiency[%f,0,1]" % options.startEfficiency,
     "signalFractionInPassing[1.0]"
     )
-if options.mcTemplateFile :
-    for absetabin in range(len(EfficiencyBins.probe_abseta)-1) :
-        for ptbin in range(len(EfficiencyBins.probe_pt)-1) :
-            pdfName = "probe_abseta_bin%d__probe_pt_bin%d" % (absetabin, ptbin)
-            thisDef = cms.vstring(
-                    'ZGeneratorLineShape::signalPhyPass(mass, "%s", "%s")' % (options.mcTemplateFile, 'hMass_%s_Pass' % pdfName),
-                    'ZGeneratorLineShape::signalPhyFail(mass, "%s", "%s")' % (options.mcTemplateFile, 'hMass_%s_Fail' % pdfName)
-                )
-            setattr(process.TnPMeasurement.PDFs, 'pdfSignal_'+pdfName, thisDef+pdfDef)
+#if options.mcTemplateFile :
+#    for absetabin in range(len(EfficiencyBins.probe_abseta)-1) :
+#        for ptbin in range(len(EfficiencyBins.probe_pt)-1) :
+#            pdfName = "probe_abseta_bin%d__probe_pt_bin%d" % (absetabin, ptbin)
+#            thisDef = cms.vstring(
+#                    'ZGeneratorLineShape::signalPhyPass(mass, "%s", "%s")' % (options.mcTemplateFile, 'hMass_%s_Pass' % pdfName),
+#                    'ZGeneratorLineShape::signalPhyFail(mass, "%s", "%s")' % (options.mcTemplateFile, 'hMass_%s_Fail' % pdfName)
+#                )
+#            setattr(process.TnPMeasurement.PDFs, 'pdfSignal_'+pdfName, thisDef+pdfDef)
 
 # switch pdf settings
 if (not options.isMC):
