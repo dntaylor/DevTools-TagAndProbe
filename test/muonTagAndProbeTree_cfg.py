@@ -22,10 +22,12 @@ trackIsoDef = 'trackIso()/pt()'
 options['HLTProcessName']          = "HLT"
 options['MUON_COLL']               = "slimmedMuons"
 options['MUON_CUTS']               = "((isTrackerMuon || isGlobalMuon) && abs(eta)<2.4 && pt>5)"
-options['MUON_TAG_CUTS']           = "(userInt('isTightMuon')==1 && pt > 25 && abs(eta) < 2.1 && "+isolationDef+" < 0.2)"
+options['MUON_TAG_CUTS']           = "(userInt('isTightMuon')==1 && pt > 25 && abs(eta) < 2.1 && "+isolationDef+" < 0.15)"
 options['MAXEVENTS']               = cms.untracked.int32(-1) 
 options['OUTPUTEDMFILENAME']       = 'edmFile.root'
 options['DEBUG']                   = cms.bool(False)
+options['TAU_COLL']                = "slimmedTaus"
+options['TAU_CUTS']                = "(tauID(\"decayModeFinding\") && abs(eta)<2.3 && pt>17)"
 
 from PhysicsTools.TagAndProbe.treeMakerOptions_cfi import *
 
@@ -124,6 +126,11 @@ process.probeMuons = cms.EDFilter("PATMuonRefSelector",
     cut = cms.string(options['MUON_CUTS']), 
 )
 
+process.probeTaus = cms.EDFilter("PATTauRefSelector",
+    src = cms.InputTag(options['TAU_COLL']),
+    cut = cms.string(options['TAU_CUTS']), 
+)
+
 ######################
 ### Trigger Probes ###
 ######################
@@ -139,13 +146,9 @@ process.probeTriggersMu17Leg = cms.EDProducer("PatMuonTriggerCandProducer",
     )
 process.probeTriggerSeq += process.probeTriggersMu17Leg
 
-#process.probeTriggersMu17LegL1Mu12 = cms.EDProducer("L1MuonMatcher",
-#        inputs = cms.InputTag("probeTriggersMu17Leg"),
-#        l1extraMuons = cms.InputTag("l1extraParticles"),
-#        minET = cms.double(12.),
-#        dRmatch = cms.double(.5)
-#        )
-#process.probeTriggerSeq += process.probeTriggersMu17LegL1Mu12
+process.tagTriggersMu17Leg = process.probeTriggersMu17Leg.clone()
+process.tagTriggersMu17Leg.inputs = cms.InputTag("tagMuonsTriggerMatched")
+process.probeTriggerSeq += process.tagTriggersMu17Leg
 
 process.probeTriggersMu8Leg = process.probeTriggersMu17Leg.clone()
 process.probeTriggersMu8Leg.filterNames = cms.vstring("hltDiMuonGlb17Glb8RelTrkIsoFiltered0p4", "hltL3pfL1sDoubleMu114L1f0L2pf0L3PreFiltered8")
@@ -155,8 +158,14 @@ process.probeTriggersTkMu8Leg = process.probeTriggersMu17Leg.clone()
 process.probeTriggersTkMu8Leg.filterNames = cms.vstring("hltDiMuonGlb17Trk8RelTrkIsoFiltered0p4", "hltDiMuonGlbFiltered17TrkFiltered8")
 process.probeTriggerSeq += process.probeTriggersTkMu8Leg
 
+process.probeTriggersMu8ORTkMu8LegPre = process.probeTriggersMu17Leg.clone()
+process.probeTriggersMu8ORTkMu8LegPre.filterNames = cms.vstring("hltL3pfL1sDoubleMu114L1f0L2pf0L3PreFiltered8", "hltDiMuonGlbFiltered17TrkFiltered8")
+process.probeTriggersMu8ORTkMu8LegPre.isAND = cms.bool(False)
+process.probeTriggerSeq += process.probeTriggersMu8ORTkMu8LegPre
+
 process.probeTriggersMu8ORTkMu8Leg = process.probeTriggersMu17Leg.clone()
-process.probeTriggersMu8ORTkMu8Leg.filterNames = cms.vstring("hltL3pfL1sDoubleMu114L1f0L2pf0L3PreFiltered8", "hltDiMuonGlbFiltered17TrkFiltered8")
+process.probeTriggersMu8ORTkMu8Leg.inputs = cms.InputTag('probeTriggersMu8ORTkMu8LegPre')
+process.probeTriggersMu8ORTkMu8Leg.filterNames = cms.vstring("hltDiMuonGlb17Glb8RelTrkIsoFiltered0p4", "hltDiMuonGlb17Trk8RelTrkIsoFiltered0p4")
 process.probeTriggersMu8ORTkMu8Leg.isAND = cms.bool(False)
 process.probeTriggerSeq += process.probeTriggersMu8ORTkMu8Leg
 
@@ -198,22 +207,37 @@ process.probeTriggerSeq += process.probeTriggersMu23Ele12MLeg
 process.probeTriggersMu17Tau20MLegSingleL1 = process.probeTriggersMu17Leg.clone()
 process.probeTriggersMu17Tau20MLegSingleL1.filterNames = cms.vstring("hltL3crIsoL1sSingleMu16erL1f0L2f10QL3f17QL3trkIsoFiltered0p09")
 process.probeTriggerSeq += process.probeTriggersMu17Tau20MLegSingleL1
+process.tagTriggersMu17Tau20MLegSingleL1 = process.probeTriggersMu17Tau20MLegSingleL1.clone()
+process.tagTriggersMu17Tau20MLegSingleL1.inputs = cms.InputTag("tagMuonsTriggerMatched")
+process.probeTriggerSeq += process.tagTriggersMu17Tau20MLegSingleL1
 
 process.probeTriggersMu19Tau20MLegSingleL1 = process.probeTriggersMu17Leg.clone()
 process.probeTriggersMu19Tau20MLegSingleL1.filterNames = cms.vstring("hltL3crIsoL1sSingleMu18erIorSingleMu20erL1f0L2f10QL3f19QL3trkIsoFiltered0p09")
 process.probeTriggerSeq += process.probeTriggersMu19Tau20MLegSingleL1
+process.tagTriggersMu19Tau20MLegSingleL1 = process.probeTriggersMu19Tau20MLegSingleL1.clone()
+process.tagTriggersMu19Tau20MLegSingleL1.inputs = cms.InputTag("tagMuonsTriggerMatched")
+process.probeTriggerSeq += process.tagTriggersMu19Tau20MLegSingleL1
 
 process.probeTriggersMu21Tau20MLegSingleL1 = process.probeTriggersMu17Leg.clone()
 process.probeTriggersMu21Tau20MLegSingleL1.filterNames = cms.vstring("hltL3fL1sSingleMu20erIorSingleMu22erL1f0L2f10QL3Filtered21Q")
 process.probeTriggerSeq += process.probeTriggersMu21Tau20MLegSingleL1
+process.tagTriggersMu21Tau20MLegSingleL1 = process.probeTriggersMu21Tau20MLegSingleL1.clone()
+process.tagTriggersMu21Tau20MLegSingleL1.inputs = cms.InputTag("tagMuonsTriggerMatched")
+process.probeTriggerSeq += process.tagTriggersMu21Tau20MLegSingleL1
 
 process.probeTriggersMu17Tau20MLeg = process.probeTriggersMu17Leg.clone()
 process.probeTriggersMu17Tau20MLeg.filterNames = cms.vstring("hltL3crIsoL1sMu16erTauJet20erL1f0L2f10QL3f17QL3trkIsoFiltered0p09")
 process.probeTriggerSeq += process.probeTriggersMu17Tau20MLeg
+process.tagTriggersMu17Tau20MLeg = process.probeTriggersMu17Tau20MLeg.clone()
+process.tagTriggersMu17Tau20MLeg.inputs = cms.InputTag("tagMuonsTriggerMatched")
+process.probeTriggerSeq += process.tagTriggersMu17Tau20MLeg
 
 process.probeTriggersMu19Tau20MLeg = process.probeTriggersMu17Leg.clone()
 process.probeTriggersMu19Tau20MLeg.filterNames = cms.vstring("hltL3crIsoL1sMu18erTauJet20erL1f0L2f10QL3f19QL3trkIsoFiltered0p09")
 process.probeTriggerSeq += process.probeTriggersMu19Tau20MLeg
+process.tagTriggersMu19Tau20MLeg = process.probeTriggersMu19Tau20MLeg.clone()
+process.tagTriggersMu19Tau20MLeg.inputs = cms.InputTag("tagMuonsTriggerMatched")
+process.probeTriggerSeq += process.tagTriggersMu19Tau20MLeg
 
 
 # IsoMu
@@ -291,6 +315,39 @@ process.probeTriggerSeq += process.probeTriggersIsoMu22ORIsoTkMu22
 #process.probeTriggersIsoMu27ORIsoTkMu27.filterNames = cms.vstring("hltL3crIsoL1sMu22Or25L1f0L2f10QL3f27QL3trkIsoFiltered0p09","hltL3fL1sMu22Or25L1f0Tkf27QL3trkIsoFiltered0p09")
 #process.probeTriggerSeq += process.probeTriggersIsoMu27ORIsoTkMu27
 
+############
+### Taus ###
+############
+process.probeDummy = cms.EDProducer("PatTauTriggerCandProducer",
+    filterNames = cms.vstring(),
+    inputs      = cms.InputTag("probeTaus"),
+    bits        = cms.InputTag('TriggerResults::HLT'),
+    objects     = cms.InputTag('selectedPatTrigger'),
+    dR          = cms.double(0.1),
+    isAND       = cms.bool(True)
+    )
+
+
+process.probeTriggersMu17Tau20TLegSingleL1 = process.probeDummy.clone()
+process.probeTriggersMu17Tau20TLegSingleL1.filterNames = cms.vstring("hltOverlapFilterSingleIsoMu17LooseIsoPFTau20")
+process.probeTriggerSeq += process.probeTriggersMu17Tau20TLegSingleL1
+
+process.probeTriggersMu19Tau20TLegSingleL1 = process.probeDummy.clone()
+process.probeTriggersMu19Tau20TLegSingleL1.filterNames = cms.vstring("hltOverlapFilterSingleIsoMu19LooseIsoPFTau20")
+process.probeTriggerSeq += process.probeTriggersMu19Tau20TLegSingleL1
+
+process.probeTriggersMu21Tau20TLegSingleL1 = process.probeDummy.clone()
+process.probeTriggersMu21Tau20TLegSingleL1.filterNames = cms.vstring("hltOverlapFilterSingleIsoMu21LooseIsoPFTau20")
+process.probeTriggerSeq += process.probeTriggersMu21Tau20TLegSingleL1
+
+process.probeTriggersMu17Tau20TLeg = process.probeDummy.clone()
+process.probeTriggersMu17Tau20TLeg.filterNames = cms.vstring("hltOverlapFilterIsoMu17LooseIsoPFTau20")
+process.probeTriggerSeq += process.probeTriggersMu17Tau20TLeg
+
+process.probeTriggersMu19Tau20TLeg = process.probeDummy.clone()
+process.probeTriggersMu19Tau20TLeg.filterNames = cms.vstring("hltOverlapFilterIsoMu19LooseIsoPFTau20")
+process.probeTriggerSeq += process.probeTriggersMu19Tau20TLeg
+
 
 ###################################################################
 ## TnP PAIRS
@@ -299,6 +356,11 @@ process.probeTriggerSeq += process.probeTriggersIsoMu22ORIsoTkMu22
 process.tpPairs = cms.EDProducer("CandViewShallowCloneCombiner",
     decay = cms.string("tagMuonsTriggerMatched@+ probeMuons@-"), # charge coniugate states are implied
     cut   = cms.string("40 < mass < 200")
+)
+
+process.tpPairsTau = cms.EDProducer("CandViewShallowCloneCombiner",
+    decay = cms.string("tagMuonsTriggerMatched@+ probeTaus@-"), # charge coniugate states are implied
+    cut   = cms.string("20 < mass < 200")
 )
 
 #process.tpPairsMCEmbedded = cms.EDProducer("pairMCInfoEmbedder",
@@ -358,13 +420,31 @@ ProbeVariablesToStore = cms.PSet(
     probe_bestTrackType   = cms.string('muonBestTrackType'),
     )
 
+ProbeVariablesToStoreTau = cms.PSet(
+    probe_eta             = cms.string("eta"),
+    probe_abseta          = cms.string("abs(eta)"),
+    probe_pt              = cms.string("pt"),
+    probe_et              = cms.string("et"),
+    probe_e               = cms.string("energy"),
+    probe_q               = cms.string("charge"),
+    )
+
+TagFlagsToStore = cms.PSet(
+    passingMu17                 = cms.InputTag("tagTriggersMu17Leg"),
+    pasingMu17Tau20MLegSingleL1 = cms.InputTag("tagTriggersMu17Tau20MLegSingleL1"),
+    pasingMu19Tau20MLegSingleL1 = cms.InputTag("tagTriggersMu19Tau20MLegSingleL1"),
+    pasingMu21Tau20MLegSingleL1 = cms.InputTag("tagTriggersMu21Tau20MLegSingleL1"),
+    pasingMu17Tau20MLeg         = cms.InputTag("tagTriggersMu17Tau20MLeg"),
+    pasingMu19Tau20MLeg         = cms.InputTag("tagTriggersMu19Tau20MLeg"),
+)
+
 TagVariablesToStore = cms.PSet(
-    tag_eta    = cms.string("eta"),
-    tag_abseta = cms.string("abs(eta)"),
-    tag_pt     = cms.string("pt"),
-    tag_et     = cms.string("et"),
-    tag_e      = cms.string("energy"),
-    tag_q      = cms.string("charge"),
+    eta    = cms.string("eta"),
+    abseta = cms.string("abs(eta)"),
+    pt     = cms.string("pt"),
+    et     = cms.string("et"),
+    e      = cms.string("energy"),
+    q      = cms.string("charge"),
     )
 
 CommonStuffForMuonProbe = cms.PSet(
@@ -381,7 +461,24 @@ CommonStuffForMuonProbe = cms.PSet(
         mass60to120 = cms.string("60 < mass < 120")
         ),
     tagVariables   =  cms.PSet(TagVariablesToStore),
-    tagFlags       =  cms.PSet(),    
+    tagFlags       =  cms.PSet(TagFlagsToStore),    
+    )
+
+CommonStuffForTauProbe = cms.PSet(
+    variables = cms.PSet(ProbeVariablesToStoreTau),
+    ignoreExceptions =  cms.bool (True),
+    addRunLumiInfo   =  cms.bool (True),
+    pileupInfoTag = cms.InputTag("slimmedAddPileupInfo"),
+    addEventVariablesInfo   =  cms.bool(True),
+    vertexCollection = cms.InputTag("offlineSlimmedPrimaryVertices"),
+    beamSpot = cms.InputTag("offlineBeamSpot"),
+    #pfMet = cms.InputTag(""),
+    pairVariables =  cms.PSet(ZVariablesToStore),
+    pairFlags     =  cms.PSet(
+        mass60to120 = cms.string("60 < mass < 120")
+        ),
+    tagVariables   =  cms.PSet(TagVariablesToStore),
+    tagFlags       =  cms.PSet(TagFlagsToStore),    
     )
 
 #mcTruthCommonStuff = cms.PSet(
@@ -481,8 +578,23 @@ process.muonEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
     allProbes     = cms.InputTag("probeMuons"),
     )
 
+process.tauEffs = cms.EDAnalyzer("TagProbeFitTreeProducer",
+    CommonStuffForTauProbe, mcTruthCommonStuff,
+    tagProbePairs = cms.InputTag("tpPairsTau"),
+    arbitration   = cms.string("Random2"),
+    flags         = cms.PSet(
+        passingMu17Tau20TLegSingleL1          = cms.InputTag("probeTriggersMu17Tau20TLegSingleL1"),
+        passingMu19Tau20TLegSingleL1          = cms.InputTag("probeTriggersMu19Tau20TLegSingleL1"),
+        passingMu21Tau20TLegSingleL1          = cms.InputTag("probeTriggersMu21Tau20TLegSingleL1"),
+        passingMu17Tau20TLeg                  = cms.InputTag("probeTriggersMu17Tau20TLeg"),
+        passingMu19Tau20TLeg                  = cms.InputTag("probeTriggersMu19Tau20TLeg"),
+    ),
+    allProbes     = cms.InputTag("probeTaus"),
+    )
+
 process.tpPairSeq = cms.Sequence(
-    process.tpPairs
+    process.tpPairs*
+    process.tpPairsTau
 )
 
 if varOptions.isMC :
@@ -493,7 +605,7 @@ if varOptions.isMC :
     process.muonEffs.eventWeight   = cms.InputTag("generator")
     process.muonEffs.PUWeightSrc   = cms.InputTag("pileupReweightingProducer","pileupWeights")
     #setattr(process.muonEffs.pairVariables, 'mc_mass', cms.string("userFloat('mc_mass')"))
-    process.muonEffs.tagProbePairs = cms.InputTag("tpPairs")
+    #process.muonEffs.tagProbePairs = cms.InputTag("tpPairs")
 
 #if not options.isMC :
 #    import FWCore.PythonUtilities.LumiList as LumiList
@@ -502,10 +614,11 @@ if varOptions.isMC :
 process.p = cms.Path(
     process.sampleInfo *
     process.idEmbedSequence *
-    (process.tagMuons + process.probeMuons) *
+    (process.tagMuons + process.probeMuons + process.probeTaus) *
     (process.tagMuonsTriggerMatched + process.probeTriggerSeq) *
     process.tpPairSeq *
-    process.muonEffs
+    process.muonEffs *
+    process.tauEffs
     )
 
 process.out = cms.OutputModule("PoolOutputModule",

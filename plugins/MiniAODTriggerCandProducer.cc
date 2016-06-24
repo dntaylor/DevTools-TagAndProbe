@@ -3,6 +3,7 @@
 #include "DataFormats/PatCandidates/interface/Electron.h"
 #include "DataFormats/PatCandidates/interface/Photon.h"
 #include "DataFormats/PatCandidates/interface/Muon.h"
+#include "DataFormats/PatCandidates/interface/Tau.h"
 #include "DataFormats/RecoCandidate/interface/RecoEcalCandidate.h"
 #include "DataFormats/RecoCandidate/interface/RecoEcalCandidateFwd.h"
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidate.h"
@@ -72,4 +73,7 @@ bool MiniAODTriggerCandProducer<reco::RecoEcalCandidate>::onlineOfflineMatching(
 
 typedef MiniAODTriggerCandProducer<pat::Muon> PatMuonTriggerCandProducer;
 DEFINE_FWK_MODULE(PatMuonTriggerCandProducer);
+
+typedef MiniAODTriggerCandProducer<pat::Tau> PatTauTriggerCandProducer;
+DEFINE_FWK_MODULE(PatTauTriggerCandProducer);
 

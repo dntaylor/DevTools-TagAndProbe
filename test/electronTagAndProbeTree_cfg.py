@@ -167,6 +167,7 @@ process.goodElectronsMeasureHLTEle17 = process.goodElectronsMeasureHLTEle23.clon
 process.goodElectronsMeasureHLTEle17.filterNames = cms.vstring("hltEle17CaloIdLTrackIdLIsoVLTrackIsoFilter")
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle17
 
+
 process.goodElectronsMeasureHLTEle12 = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle12.filterNames = cms.vstring("hltEle12CaloIdLTrackIdLIsoVLTrackIsoFilter")
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle12
@@ -174,6 +175,7 @@ process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle12
 process.goodElectronsMeasureHLTEle17Ele12Leg1 = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle17Ele12Leg1.filterNames = cms.vstring("hltEle17Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg1Filter")
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle17Ele12Leg1
+
 
 process.goodElectronsMeasureHLTEle17Ele12Leg2 = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle17Ele12Leg2.filterNames = cms.vstring("hltEle17Ele12CaloIdLTrackIdLIsoVLTrackIsoLeg2Filter")
@@ -194,6 +196,17 @@ process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle23Ele12Leg2
 process.goodElectronsMeasureHLTEle23Ele12DZ = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle23Ele12DZ.filterNames = cms.vstring("hltEle23Ele12CaloIdLTrackIdLIsoVLDZFilter")
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle23Ele12DZ
+
+# tags
+process.tagElectronsMeasureHLTEle17Ele12Leg1 = process.goodElectronsMeasureHLTEle17Ele12Leg1.clone()
+process.tagElectronsMeasureHLTEle17Ele12Leg1.inputs = cms.InputTag("goodElectronsTagHLT")
+process.goodElectronsMeasureHLT += process.tagElectronsMeasureHLTEle17Ele12Leg1
+
+process.tagElectronsMeasureHLTEle23Ele12Leg1 = process.goodElectronsMeasureHLTEle23Ele12Leg1.clone()
+process.tagElectronsMeasureHLTEle23Ele12Leg1.inputs = cms.InputTag("goodElectronsTagHLT")
+process.goodElectronsMeasureHLT += process.tagElectronsMeasureHLTEle23Ele12Leg1
+
+
 
 # electron muon
 process.goodElectronsMeasureHLTMu17Ele12ELeg = process.goodElectronsMeasureHLTEle23.clone()
@@ -236,6 +249,16 @@ process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle32Tau20LegS
 process.goodElectronsMeasureHLTEle24Tau20Leg = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle24Tau20Leg.filterNames = cms.vstring("hltEle24WPLooseL1IsoEG22erTau20erGsfTrackIsoFilter")
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle24Tau20Leg
+
+
+
+#################
+### Tag flags ###
+#################
+TagFlagsToStore = cms.PSet(
+    passingEle17Ele12Leg1 = cms.InputTag("tagElectronsMeasureHLTEle17Ele12Leg1"),
+    passingEle23Ele12Leg1 = cms.InputTag("tagElectronsMeasureHLTEle23Ele12Leg1"),
+)
 
 
 
@@ -348,6 +371,8 @@ process.GsfElectronToTrigger = cms.EDAnalyzer("TagProbeFitTreeProducer",
                                                                        ),                                               
                                               allProbes     = cms.InputTag("goodElectronsProbeMeasureHLT"),
                                               )
+
+process.GsfElectronToTrigger.tagFlags = cms.PSet(TagFlagsToStore)
 
 if (varOptions.isMC):
     #process.GsfElectronToTrigger.probeMatches  = cms.InputTag("McMatchHLT")
