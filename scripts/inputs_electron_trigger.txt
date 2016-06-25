@@ -4,8 +4,8 @@ passingHLTEle25Tight
 passingHLTEle35
 # double electron
 passingHLTEle23Ele12Leg1
-passingHLTEle23Ele12Leg2 tag_passingHLTEle23Ele12Leg1
-passingHLTEle23Ele12DZ tag_passingHLTEle23Ele12Leg1 tag_passingHLTEle23Ele12Leg2
+passingHLTEle23Ele12Leg2 tag_passingEle23Ele12Leg1
+passingHLTEle23Ele12DZ tag_passingEle23Ele12Leg1 passingHLTEle23Ele12Leg2
 # electron electron
 passingHLTMu23Ele12ELeg
 passingHLTMu23Ele8ELeg

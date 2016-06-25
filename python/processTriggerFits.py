@@ -99,7 +99,7 @@ def saveEff(obj,trigname,outfile,outdir):
     effname = [x.GetName() for x in tfile.Get('{0}/{1}/cnt_eff_plots'.format(effdir[obj],directory)).GetListOfKeys() if x.GetName().startswith('{0}_{1}'.format(ptvar[obj],etavar[obj]))][0]
     print effdir[obj],directory,effname
     canvas = tfile.Get('{0}/{1}/cnt_eff_plots/{2}'.format(effdir[obj],directory,effname))
-    eff = canvas.GetPrimitive('probe_pt_probe_eta_PLOT')
+    eff = canvas.GetPrimitive(effname)
 
     outfile.cd()
     outfile.mkdir(trigname).cd()

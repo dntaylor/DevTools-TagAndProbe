@@ -1,5 +1,5 @@
 obj="$1"
-inputfile=inputs_"$obj"_trigger.txt
+inputfile="`dirname $0`/inputs_"$obj"_trigger.txt"
 while read idConditions; do
     if [ ${idConditions:0:1} == "#" ]; then
         continue
