@@ -33,7 +33,7 @@ def setStyle(pad,position=11,preliminary=True):
     CMS_lumi.CMS_lumi(pad,period_int,position)
 
 
-def save2D(eff,obj,savename,outdir):
+def save2D(eff,savename,outdir):
     canvas = ROOT.TCanvas(savename,savename,50,50,600,600)
     canvas.SetLogx(True)
     canvas.SetRightMargin(0.18) # for Z axis
@@ -47,7 +47,7 @@ def save2D(eff,obj,savename,outdir):
         python_mkdir(os.path.dirname(name))
         canvas.Print(name)
 
-def save1D(eff,obj,var,savename,outdir):
+def save1D(eff,var,savename,outdir):
     colors = [ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10]
     canvas = ROOT.TCanvas(savename,savename,50,50,600,600)
     canvas.SetLogx(True if var=='pt' else False)
@@ -108,9 +108,9 @@ def saveEff(obj,trigname,outfile,outdir):
     ptbins = getBinning(obj,'pt',trig=True)
     etabins = getBinning(obj,'eta',trig=True)
     
-    save2D(eff.Clone(),obj,trigname,outdir)
-    save1D(eff,obj,'pt',trigname+'_pt',outdir)
-    save1D(eff,obj,'eta',trigname+'_eta',outdir)
+    save2D(eff.Clone(),trigname,outdir)
+    save1D(eff,'pt',trigname+'_pt',outdir)
+    save1D(eff,'eta',trigname+'_eta',outdir)
 
 def doAllEfficiencies(obj):
     outdir = 'fits_{0}_trigger'.format(obj)
@@ -159,14 +159,19 @@ def doAllEfficiencies(obj):
         print 'processing {0} {1}'.format(obj,eff)
         saveEff(obj,eff,outfile,outdir)
 
-doAllEfficiencies('muon')
-doAllEfficiencies('electron')
 
 
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv[1:]
+
+    doAllEfficiencies('muon')
+    doAllEfficiencies('electron')
 
 
-
-
+if __name__ == "__main__":
+    status = main()
+    sys.exit(status)
 
 
 

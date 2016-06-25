@@ -1,22 +1,66 @@
 #!/usr/bin/env python
-import ROOT
-ROOT.gROOT.SetBatch(True)
-ROOT.PyConfig.IgnoreCommandLineOptions = True
 import array
 import sys
+import os
 import subprocess
 import argparse
 
 from DevTools.TagAndProbe.utilities import getBinning
+from DevTools.Plotter.utilities import getLumi
+from DevTools.Utilities.utilities import python_mkdir
 
 __gitversion__ = subprocess.check_output(["git", "describe", "--always"]).strip()
 
-def plot(args):
-    ptbins = getBinning(args.object,'pt')
-    etabins = getBinning(args.object,'eta')
+import ROOT
+import DevTools.Plotter.CMS_lumi as CMS_lumi
+import DevTools.Plotter.tdrstyle as tdrstyle
+ROOT.gROOT.SetBatch(ROOT.kTRUE)
+ROOT.PyConfig.IgnoreCommandLineOptions = True
+ROOT.gROOT.ProcessLine("gErrorIgnoreLevel = 2001;")
+tdrstyle.setTDRStyle()
+ROOT.gStyle.SetPalette(1)
+
+def setStyle(pad,position=11,preliminary=True):
+    '''Set style for plots based on the CMS TDR style guidelines.
+       https://twiki.cern.ch/twiki/bin/view/CMS/Internal/PubGuidelines#Figures_and_tables
+       https://ghm.web.cern.ch/ghm/plots/'''
+    # set period (used in CMS_lumi)
+    # period : sqrts
+    # 1 : 7, 2 : 8, 3 : 7+8, 4 : 13, ... 7 : 7+8+13
+    period_int = 4
+    # set position
+    # 11: upper left, 33 upper right
+    CMS_lumi.wrtieExtraText = preliminary
+    CMS_lumi.extraText = "Preliminary"
+    CMS_lumi.lumi_13TeV = "%0.1f fb^{-1}" % (float(getLumi())/1000.)
+    if getLumi() < 1000:
+        CMS_lumi.lumi_13TeV = "%0.1f pb^{-1}" % (float(getLumi()))
+    CMS_lumi.CMS_lumi(pad,period_int,position)
+
+
+def save2D(eff,savename,outdir):
+    canvas = ROOT.TCanvas(savename,savename,50,50,600,600)
+    canvas.SetLogx(True)
+    canvas.SetRightMargin(0.18) # for Z axis
+    eff.GetXaxis().SetTitleOffset(1.4)
+    eff.GetYaxis().SetTitleOffset(1.4)
+    eff.GetXaxis().SetTitleSize(0.045)
+    eff.GetYaxis().SetTitleSize(0.045)
+    eff.Draw('colz')
+    setStyle(canvas,position=0)
+    for t in ['png','pdf']:
+        name = '{0}/{2}/{1}.{2}'.format(outdir,savename,t)
+        python_mkdir(os.path.dirname(name))
+        canvas.Print(name)
+
+
+def plot(obj,idName,idNameNice):
+
+    ptbins = getBinning(obj,'pt')
+    etabins = getBinning(obj,'eta')
     colors = [ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10]
     
-    ROOT.gROOT.ProcessLine('.L fits_{obj}/{id}/{id}.C+'.format(obj=args.object,id=args.idName))
+    ROOT.gROOT.ProcessLine('.L fits_{obj}/{id}/{id}.C+'.format(obj=obj,id=idName))
     
     variations = [
         ROOT.STAT_UP,
@@ -26,10 +70,10 @@ def plot(args):
         ROOT.SYST_CMSSHAPE
         ]
     
-    if 'Iso' in args.idName:
-        eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, 0., var)
+    if 'Iso' in idName:
+        eff = lambda pt, eta, var : getattr(ROOT, idName)(pt, eta, True, 0., var)
     else:
-        eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
+        eff = lambda pt, eta, var : getattr(ROOT, idName)(pt, eta, True, var)
     
     effCentral = lambda pt, eta : eff(pt, eta, ROOT.CENTRAL)
     effMax = lambda pt, eta : max(map(lambda v : eff(pt,eta,v), variations))-effCentral(pt,eta)
@@ -64,10 +108,11 @@ def plot(args):
     leg = canvas.BuildLegend(.5,.2,.9,.4)
     for entry in leg.GetListOfPrimitives() :
         entry.SetOption('lp')
-    leg.SetHeader(args.idNameNice)
+    leg.SetHeader(idNameNice)
     
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.png'.format(args.object,args.idName))
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.root'.format(args.object,args.idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.png'.format(obj,idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.pdf'.format(obj,idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.root'.format(obj,idName))
 
     # eta bins
     xbins = array.array('d', [0.5*sum(etabins[i:i+2]) for i in range(len(etabins)-1)])
@@ -97,10 +142,28 @@ def plot(args):
     leg = canvas.BuildLegend(.5,.2,.9,.4)
     for entry in leg.GetListOfPrimitives() :
         entry.SetOption('lp')
-    leg.SetHeader(args.idNameNice)
+    leg.SetHeader(idNameNice)
     
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.png'.format(args.object,args.idName))
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.root'.format(args.object,args.idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.png'.format(obj,idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.pdf'.format(obj,idName))
+    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.root'.format(obj,idName))
+
+    # pt eta bins
+    pteta = ROOT.TH2F('scalefactor','scalefactor;Probe p_{T};Probe #eta',len(ptbins)-1,array.array('d',ptbins),len(etabins)-1,array.array('d',etabins))
+    for p in range(len(ptbins)-1):
+        pt = .5*sum(ptbins[p:p+2])
+        for e in range(len(etabins)-1):
+            eta = .5*sum(etabins[e:e+2])
+            sf = effCentral(pt,eta)
+            hi = effMax(pt,eta)
+            lo = effMin(pt,eta)
+            err = abs(hi-sf + sf-lo)/2.
+            #print pt,eta,sf,hi,lo,err
+            pteta.SetBinContent(pteta.FindBin(pt,eta),sf)
+            pteta.SetBinError(pteta.FindBin(pt,eta),err)
+
+    save2D(pteta.Clone(),'scaleFactor','fits_{0}/{1}'.format(obj,idName))
+            
     
     # ------- Latex
     def formatValue(var, varerr, etabin, ptbin) :
@@ -152,9 +215,9 @@ def plot(args):
     output += '''   \\end{tabular}
     \\caption{Efficiency table for %s}
     \\end{table}
-    %% Generated with DiBosonTP version %s
-    ''' % (args.idName, __gitversion__)
-    with open('fits_{0}/{1}/table.tex'.format(args.object,args.idName), 'w') as fout :
+    %% Generated with DevTools/TagAndProbe version %s
+    ''' % (idName, __gitversion__)
+    with open('fits_{0}/{1}/table.tex'.format(obj,idName), 'w') as fout :
         fout.write(output)
 
 
@@ -162,8 +225,8 @@ def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='TagAndProbe Plotter')
 
     parser.add_argument('object', type=str, choices=['electron','muon'], help='Physics object')
-    parser.add_argument('idName', type=str, help='ID name to plot')
-    parser.add_argument('idNameNice', type=str, help='Pretty name for ID')
+    parser.add_argument('idName', type=str, help='Name of ID')
+    parser.add_argument('idNameNice', type=str, help='Name of ID for printing')
 
     return parser.parse_args(argv)
 
@@ -174,7 +237,7 @@ def main(argv=None):
 
     args = parse_command_line(argv)
 
-    plot(args)
+    plot(args.object,args.idName,args.idNameNice)
 
     return 0
 
