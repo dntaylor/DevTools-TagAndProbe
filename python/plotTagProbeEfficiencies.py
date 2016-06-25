@@ -149,6 +149,7 @@ def plot(obj,idName,idNameNice):
     canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.root'.format(obj,idName))
 
     # pt eta bins
+    tfile = ROOT.TFile('fits_{0}/{1}_scalefactor.root'.format(obj,idName),'recreate')
     pteta = ROOT.TH2F('scalefactor','scalefactor;Probe p_{T};Probe #eta',len(ptbins)-1,array.array('d',ptbins),len(etabins)-1,array.array('d',etabins))
     for p in range(len(ptbins)-1):
         pt = .5*sum(ptbins[p:p+2])
@@ -163,7 +164,7 @@ def plot(obj,idName,idNameNice):
             pteta.SetBinError(pteta.FindBin(pt,eta),err)
 
     save2D(pteta.Clone(),'scaleFactor','fits_{0}/{1}'.format(obj,idName))
-            
+    pteta.Write()
     
     # ------- Latex
     def formatValue(var, varerr, etabin, ptbin) :

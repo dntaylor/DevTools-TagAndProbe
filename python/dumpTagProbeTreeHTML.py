@@ -257,6 +257,7 @@ class HTML :
     <h3>Efficiency results for {effName}</h3><br />
     Function: <a href="{effName}/{effName}.C">{effName}.C</a><br />
     Latex: <a href="{effName}/table.tex">table.tex</a><br />
+    ROOT file: <a href="{effName}_scalefactor.root">scalefactor.root</a><br />
     <div style="text-align: center;"><b>Summary Plot</b><br /><img src="{effName}/png/scaleFactor.png" /><br /><img src="{effName}/scaleFactor_vs_pt.png" style="float: left;" /><img src="{effName}/scaleFactor_vs_eta.png" style="float: right;" /></div>
     <table>
         <tr style="background: #cccccc">
