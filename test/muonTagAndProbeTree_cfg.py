@@ -606,6 +606,9 @@ if varOptions.isMC :
     process.muonEffs.PUWeightSrc   = cms.InputTag("pileupReweightingProducer","pileupWeights")
     #setattr(process.muonEffs.pairVariables, 'mc_mass', cms.string("userFloat('mc_mass')"))
     #process.muonEffs.tagProbePairs = cms.InputTag("tpPairs")
+    process.tauEffs.isMC = cms.bool(True)
+    process.tauEffs.eventWeight   = cms.InputTag("generator")
+    process.tauEffs.PUWeightSrc   = cms.InputTag("pileupReweightingProducer","pileupWeights")
 
 #if not options.isMC :
 #    import FWCore.PythonUtilities.LumiList as LumiList
