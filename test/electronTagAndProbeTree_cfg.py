@@ -98,6 +98,19 @@ process.maxEvents = cms.untracked.PSet( input = options['MAXEVENTS'])
 from PhysicsTools.TagAndProbe.electronIDModules_cfi import *
 setIDs(process, options)
 
+# trigger
+#Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ
+#Ele24_eta2p1_WPLoose_Gsf_LooseIsoPFTau20
+#Ele24_eta2p1_WPLoose_Gsf_LooseIsoPFTau20_SingleL1
+#Ele25_eta2p1_WPTight_Gsf
+#Ele27_WPTight_Gsf
+#Ele27_eta2p1_WPLoose_Gsf
+#Ele27_eta2p1_WPLoose_Gsf_LooseIsoPFTau20_SingleL1
+#Ele27_eta2p1_WPTight_Gsf
+#Ele32_eta2p1_WPLoose_Gsf_LooseIsoPFTau20_SingleL1
+#Ele32_eta2p1_WPTight_Gsf
+#Ele45_WPLoose_Gsf
+
 
 ###############
 ### Trigger ###
@@ -122,9 +135,9 @@ process.goodElectronsMeasureHLTEle23 = cms.EDProducer("PatElectronTriggerCandPro
 #process.goodElectronsMeasureHLTEle24Eta2p1.filterNames = cms.vstring("hltSingleEle24WPLooseGsfTrackIsoFilter")
 #process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle24Eta2p1
 
-process.goodElectronsMeasureHLTEle25Eta2p1 = process.goodElectronsMeasureHLTEle23.clone()
-process.goodElectronsMeasureHLTEle25Eta2p1.filterNames = cms.vstring("hltEle25erWPLooseGsfTrackIsoFilter")
-process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle25Eta2p1
+#process.goodElectronsMeasureHLTEle25Eta2p1 = process.goodElectronsMeasureHLTEle23.clone()
+#process.goodElectronsMeasureHLTEle25Eta2p1.filterNames = cms.vstring("hltEle25erWPLooseGsfTrackIsoFilter")
+#process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle25Eta2p1
 
 process.goodElectronsMeasureHLTEle27Eta2p1 = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle27Eta2p1.filterNames = cms.vstring("hltEle27erWPLooseGsfTrackIsoFilter")
@@ -146,17 +159,17 @@ process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle32Eta2p1Tig
 #process.goodElectronsMeasureHLTEle27.filterNames = cms.vstring("hltEle27noerWPLooseGsfTrackIsoFilter")
 #process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle27
 
-process.goodElectronsMeasureHLTEle35 = process.goodElectronsMeasureHLTEle23.clone()
-process.goodElectronsMeasureHLTEle35.filterNames = cms.vstring("hltEle35WPLooseGsfTrackIsoFilter")
-process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle35
+#process.goodElectronsMeasureHLTEle35 = process.goodElectronsMeasureHLTEle23.clone()
+#process.goodElectronsMeasureHLTEle35.filterNames = cms.vstring("hltEle35WPLooseGsfTrackIsoFilter")
+#process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle35
 
 process.goodElectronsMeasureHLTEle45 = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle45.filterNames = cms.vstring("hltEle45WPLooseGsfTrackIsoFilter")
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle45
 
-process.goodElectronsMeasureHLTEle25Tight = process.goodElectronsMeasureHLTEle23.clone()
-process.goodElectronsMeasureHLTEle25Tight.filterNames = cms.vstring("hltEle25WPTightGsfTrackIsoFilter")
-process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle25Tight
+#process.goodElectronsMeasureHLTEle25Tight = process.goodElectronsMeasureHLTEle23.clone()
+#process.goodElectronsMeasureHLTEle25Tight.filterNames = cms.vstring("hltEle25WPTightGsfTrackIsoFilter")
+#process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle25Tight
 
 process.goodElectronsMeasureHLTEle27Tight = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle27Tight.filterNames = cms.vstring("hltEle27WPTightGsfTrackIsoFilter")
@@ -208,26 +221,26 @@ process.goodElectronsMeasureHLT += process.tagElectronsMeasureHLTEle23Ele12Leg1
 
 
 
-# electron muon
-process.goodElectronsMeasureHLTMu17Ele12ELeg = process.goodElectronsMeasureHLTEle23.clone()
-process.goodElectronsMeasureHLTMu17Ele12ELeg.filterNames = cms.vstring("hltMu17TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
-process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu17Ele12ELeg
-
-process.goodElectronsMeasureHLTMu8Ele17ELeg = process.goodElectronsMeasureHLTEle23.clone()
-process.goodElectronsMeasureHLTMu8Ele17ELeg.filterNames = cms.vstring("hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
-process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu8Ele17ELeg
-
-process.goodElectronsMeasureHLTMu8Ele23ELeg = process.goodElectronsMeasureHLTEle23.clone()
-process.goodElectronsMeasureHLTMu8Ele23ELeg.filterNames = cms.vstring("hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
-process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu8Ele23ELeg
-
-process.goodElectronsMeasureHLTMu23Ele8ELeg = process.goodElectronsMeasureHLTEle23.clone()
-process.goodElectronsMeasureHLTMu23Ele8ELeg.filterNames = cms.vstring("hltMu23TrkIsoVVLEle8CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
-process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu23Ele8ELeg
-
-process.goodElectronsMeasureHLTMu23Ele12ELeg = process.goodElectronsMeasureHLTEle23.clone()
-process.goodElectronsMeasureHLTMu23Ele12ELeg.filterNames = cms.vstring("hltMu23TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
-process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu23Ele12ELeg
+## electron muon
+#process.goodElectronsMeasureHLTMu17Ele12ELeg = process.goodElectronsMeasureHLTEle23.clone()
+#process.goodElectronsMeasureHLTMu17Ele12ELeg.filterNames = cms.vstring("hltMu17TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
+#process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu17Ele12ELeg
+#
+#process.goodElectronsMeasureHLTMu8Ele17ELeg = process.goodElectronsMeasureHLTEle23.clone()
+#process.goodElectronsMeasureHLTMu8Ele17ELeg.filterNames = cms.vstring("hltMu8TrkIsoVVLEle17CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
+#process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu8Ele17ELeg
+#
+#process.goodElectronsMeasureHLTMu8Ele23ELeg = process.goodElectronsMeasureHLTEle23.clone()
+#process.goodElectronsMeasureHLTMu8Ele23ELeg.filterNames = cms.vstring("hltMu8TrkIsoVVLEle23CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
+#process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu8Ele23ELeg
+#
+#process.goodElectronsMeasureHLTMu23Ele8ELeg = process.goodElectronsMeasureHLTEle23.clone()
+#process.goodElectronsMeasureHLTMu23Ele8ELeg.filterNames = cms.vstring("hltMu23TrkIsoVVLEle8CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
+#process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu23Ele8ELeg
+#
+#process.goodElectronsMeasureHLTMu23Ele12ELeg = process.goodElectronsMeasureHLTEle23.clone()
+#process.goodElectronsMeasureHLTMu23Ele12ELeg.filterNames = cms.vstring("hltMu23TrkIsoVVLEle12CaloIdLTrackIdLIsoVLElectronlegTrackIsoFilter")
+#process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTMu23Ele12ELeg
 
 # electron tau
 process.goodElectronsMeasureHLTEle22Tau20LegSingleL1 = process.goodElectronsMeasureHLTEle23.clone()
@@ -249,6 +262,15 @@ process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle32Tau20LegS
 process.goodElectronsMeasureHLTEle24Tau20Leg = process.goodElectronsMeasureHLTEle23.clone()
 process.goodElectronsMeasureHLTEle24Tau20Leg.filterNames = cms.vstring("hltEle24WPLooseL1IsoEG22erTau20erGsfTrackIsoFilter")
 process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTEle24Tau20Leg
+
+# OR
+
+#soup
+# ele25eta2p1tight ele27tight ele27eta2p1loose ele45loose
+process.goodElectronsMeasureHLTSingleEleSoup = process.goodElectronsMeasureHLTEle23.clone()
+process.goodElectronsMeasureHLTSingleEleSoup.isAND = cms.bool(False)
+process.goodElectronsMeasureHLTSingleEleSoup.filterNames = cms.vstring("hltEle25erWPTightGsfTrackIsoFilter","hltEle27WPTightGsfTrackIsoFilter","hltEle27erWPLooseGsfTrackIsoFilter","hltEle45WPLooseGsfTrackIsoFilter")
+process.goodElectronsMeasureHLT += process.goodElectronsMeasureHLTSingleEleSoup
 
 
 
@@ -339,16 +361,16 @@ process.GsfElectronToTrigger = cms.EDAnalyzer("TagProbeFitTreeProducer",
                                               flags         = cms.PSet(
                                                   #passingHLTEle22Eta2p1            = cms.InputTag("goodElectronsMeasureHLTEle22Eta2p1"),
                                                   #passingHLTEle24Eta2p1            = cms.InputTag("goodElectronsMeasureHLTEle24Eta2p1"),
-                                                  passingHLTEle25Eta2p1            = cms.InputTag("goodElectronsMeasureHLTEle25Eta2p1"),
+                                                  #passingHLTEle25Eta2p1            = cms.InputTag("goodElectronsMeasureHLTEle25Eta2p1"),
                                                   passingHLTEle27Eta2p1            = cms.InputTag("goodElectronsMeasureHLTEle27Eta2p1"),
                                                   passingHLTEle25Eta2p1Tight       = cms.InputTag("goodElectronsMeasureHLTEle25Eta2p1Tight"),
                                                   passingHLTEle27Eta2p1Tight       = cms.InputTag("goodElectronsMeasureHLTEle27Eta2p1Tight"),
                                                   passingHLTEle32Eta2p1Tight       = cms.InputTag("goodElectronsMeasureHLTEle32Eta2p1Tight"),
                                                   #passingHLTEle23                  = cms.InputTag("goodElectronsMeasureHLTEle23"),
                                                   #passingHLTEle27                  = cms.InputTag("goodElectronsMeasureHLTEle27"),
-                                                  passingHLTEle35                  = cms.InputTag("goodElectronsMeasureHLTEle35"),
+                                                  #passingHLTEle35                  = cms.InputTag("goodElectronsMeasureHLTEle35"),
                                                   passingHLTEle45                  = cms.InputTag("goodElectronsMeasureHLTEle45"),
-                                                  passingHLTEle25Tight             = cms.InputTag("goodElectronsMeasureHLTEle25Tight"),
+                                                  #passingHLTEle25Tight             = cms.InputTag("goodElectronsMeasureHLTEle25Tight"),
                                                   passingHLTEle27Tight             = cms.InputTag("goodElectronsMeasureHLTEle27Tight"),
                                                   passingHLTEle17                  = cms.InputTag("goodElectronsMeasureHLTEle17"),
                                                   passingHLTEle12                  = cms.InputTag("goodElectronsMeasureHLTEle12"),
@@ -358,16 +380,17 @@ process.GsfElectronToTrigger = cms.EDAnalyzer("TagProbeFitTreeProducer",
                                                   passingHLTEle23Ele12Leg1         = cms.InputTag("goodElectronsMeasureHLTEle23Ele12Leg1"),
                                                   passingHLTEle23Ele12Leg2         = cms.InputTag("goodElectronsMeasureHLTEle23Ele12Leg2"),
                                                   passingHLTEle23Ele12DZ           = cms.InputTag("goodElectronsMeasureHLTEle23Ele12DZ"),
-                                                  passingHLTMu8Ele17ELeg           = cms.InputTag("goodElectronsMeasureHLTMu8Ele17ELeg"),
-                                                  passingHLTMu8Ele23ELeg           = cms.InputTag("goodElectronsMeasureHLTMu8Ele23ELeg"),
-                                                  passingHLTMu17Ele12ELeg          = cms.InputTag("goodElectronsMeasureHLTMu17Ele12ELeg"),
-                                                  passingHLTMu23Ele8ELeg           = cms.InputTag("goodElectronsMeasureHLTMu23Ele8ELeg"),
-                                                  passingHLTMu23Ele12ELeg          = cms.InputTag("goodElectronsMeasureHLTMu23Ele12ELeg"),
+                                                  #passingHLTMu8Ele17ELeg           = cms.InputTag("goodElectronsMeasureHLTMu8Ele17ELeg"),
+                                                  #passingHLTMu8Ele23ELeg           = cms.InputTag("goodElectronsMeasureHLTMu8Ele23ELeg"),
+                                                  #passingHLTMu17Ele12ELeg          = cms.InputTag("goodElectronsMeasureHLTMu17Ele12ELeg"),
+                                                  #passingHLTMu23Ele8ELeg           = cms.InputTag("goodElectronsMeasureHLTMu23Ele8ELeg"),
+                                                  #passingHLTMu23Ele12ELeg          = cms.InputTag("goodElectronsMeasureHLTMu23Ele12ELeg"),
                                                   passingHLTEle22Tau20LegSingleL1  = cms.InputTag("goodElectronsMeasureHLTEle22Tau20LegSingleL1"),
                                                   passingHLTEle24Tau20LegSingleL1  = cms.InputTag("goodElectronsMeasureHLTEle24Tau20LegSingleL1"),
                                                   passingHLTEle27Tau20LegSingleL1  = cms.InputTag("goodElectronsMeasureHLTEle27Tau20LegSingleL1"),
                                                   passingHLTEle32Tau20LegSingleL1  = cms.InputTag("goodElectronsMeasureHLTEle32Tau20LegSingleL1"),
                                                   passingHLTEle24Tau20Leg          = cms.InputTag("goodElectronsMeasureHLTEle24Tau20Leg"),
+                                                  passingHLTSingleEleSoup          = cms.InputTag("goodElectronsMeasureHLTSingleEleSoup"),
                                                                        ),                                               
                                               allProbes     = cms.InputTag("goodElectronsProbeMeasureHLT"),
                                               )

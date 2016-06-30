@@ -1,0 +1,24 @@
+# single muon
+passingIsoMu20
+passingIsoTkMu20
+passingIsoMu20ORIsoTkMu20
+passingIsoMu22
+passingIsoTkMu22
+passingIsoMu22ORIsoTkMu22
+# double muon
+passingMu17
+passingMu8 tag_passingMu17
+passingTkMu8 tag_passingMu17
+passingMu8ORTkMu8 tag_passingMu17
+passingMu8DZ tag_passingMu17 passingMu8
+passingTkMu8DZ tag_passingMu17 passingTkMu8
+passingMu8ORTkMu8DZ tag_passingMu17 passingMu8ORTkMu8
+# muon eg
+passingMu17Ele12MLeg
+passingMu23Ele12MLeg
+passingMu23Ele8MLeg
+passingMu8Ele17MLeg
+passingMu8Ele23MLeg
+# muon tau
+passingMu17Tau20MLegSingleL1
+passingMu19Tau20MLegSingleL1

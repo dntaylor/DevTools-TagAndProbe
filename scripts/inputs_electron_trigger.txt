@@ -1,0 +1,15 @@
+# single electron
+passingHLTEle25Eta2p1
+passingHLTEle25Tight
+passingHLTEle35
+# double electron
+passingHLTEle23Ele12Leg1
+passingHLTEle23Ele12Leg2 tag_passingEle23Ele12Leg1
+passingHLTEle23Ele12DZ tag_passingEle23Ele12Leg1 passingHLTEle23Ele12Leg2
+# electron electron
+passingHLTMu23Ele12ELeg
+passingHLTMu23Ele8ELeg
+passingHLTMu8Ele17ELeg
+passingHLTMu8Ele23ELeg
+# tau electron
+passingHLTEle24Tau20LegSingleL1
