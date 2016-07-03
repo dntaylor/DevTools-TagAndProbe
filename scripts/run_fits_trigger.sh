@@ -12,5 +12,3 @@ while read idConditions; do
         nohup cmsRun DevTools/TagAndProbe/python/oldfitter.py object=$obj inputFileName=tagAndProbe/$obj/data.root idName=${args[0]} &
     fi
 done < $inputfile
-python DevTools/TagAndProbe/python/dumpOldFitterHTML.py muon -o fits_muon_trigger/
-python DevTools/TagAndProbe/python/dumpOldFitterHTML.py electron -o fits_electron_trigger/
