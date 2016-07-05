@@ -5,5 +5,8 @@ python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon LooseIsoFrom
 python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon MediumID "Medium ID"
 python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon LooseIsoFromMediumID "Loose Iso from Medium ID"
 python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon TightIsoFromMediumID "Tight Iso from Medium ID"
+python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon MediumIDICHEP "Medium ID (ICHEP)"
+python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon LooseIsoFromMediumIDICHEP "Loose Iso from Medium ID (ICHEP)"
+python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon TightIsoFromMediumIDICHEP "Tight Iso from Medium ID (ICHEP)"
 python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon TightID "Tight ID"
 python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon TightIsoFromTightID "Tight Iso from Tight ID"

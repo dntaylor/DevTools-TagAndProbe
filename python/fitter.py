@@ -299,13 +299,16 @@ def runfit(args):
         #fit('HLTMu17TkMu8Leg2',                  [], 'passingTkMu8',                         binning_trig, commonVars_trig+['bool passingTkMu8'],                           tdata=tdata_trig, obj=args.object, alt=True)
         #fit('HLTMu17Mu8Leg2_OR_HLTMu17TkMu8Leg', [], '(passingMu8 || passingTkMu8)',         binning_trig, commonVars_trig+['bool passingMu8','bool passingTkMu8'],         tdata=tdata_trig, obj=args.object, alt=True)
         # ID
-        fit('LooseID',              [],                'passingLoose',       binning, commonVars+['bool passingLoose'],                       tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('LooseIsoFromLooseID',  ['passingLoose'],  'probe_isoR04<0.25',  binning, commonVars+['bool passingLoose','float probe_isoR04'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('MediumID',             [],                'passingMedium',      binning, commonVars+['bool passingMedium'],                      tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('LooseIsoFromMediumID', ['passingMedium'], 'probe_isoR04<0.25',  binning, commonVars+['bool passingMedium','float probe_isoR04'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('TightIsoFromMediumID', ['passingMedium'], 'probe_isoR04<0.15',  binning, commonVars+['bool passingMedium','float probe_isoR04'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('TightID',              [],                'passingTight',       binning, commonVars+['bool passingTight'],                       tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('TightIsoFromTightID',  ['passingTight'],  'probe_isoR04<0.15',  binning, commonVars+['bool passingTight','float probe_isoR04'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('LooseID',                   [],                     'passingLoose',       binning, commonVars+['bool passingLoose'],                            tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('LooseIsoFromLooseID',       ['passingLoose'],       'probe_isoR04<0.25',  binning, commonVars+['bool passingLoose','float probe_isoR04'],       tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('MediumID',                  [],                     'passingMedium',      binning, commonVars+['bool passingMedium'],                           tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('LooseIsoFromMediumID',      ['passingMedium'],      'probe_isoR04<0.25',  binning, commonVars+['bool passingMedium','float probe_isoR04'],      tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('TightIsoFromMediumID',      ['passingMedium'],      'probe_isoR04<0.15',  binning, commonVars+['bool passingMedium','float probe_isoR04'],      tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('MediumIDICHEP',             [],                     'passingMediumICHEP', binning, commonVars+['bool passingMediumICHEP'],                      tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('LooseIsoFromMediumIDICHEP', ['passingMediumICHEP'], 'probe_isoR04<0.25',  binning, commonVars+['bool passingMediumICHEP','float probe_isoR04'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('TightIsoFromMediumIDICHEP', ['passingMediumICHEP'], 'probe_isoR04<0.15',  binning, commonVars+['bool passingMediumICHEP','float probe_isoR04'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('TightID',                   [],                     'passingTight',       binning, commonVars+['bool passingTight'],                            tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+        fit('TightIsoFromTightID',       ['passingTight'],       'probe_isoR04<0.15',  binning, commonVars+['bool passingTight','float probe_isoR04'],       tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
 
 
 def parse_command_line(argv):
