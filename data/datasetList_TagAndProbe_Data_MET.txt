@@ -1,1 +1,3 @@
 /MET/Run2016B-PromptReco-v2/MINIAOD
+/MET/Run2016C-PromptReco-v2/MINIAOD
+/MET/Run2016D-PromptReco-v2/MINIAOD
