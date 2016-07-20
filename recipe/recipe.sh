@@ -2,5 +2,5 @@
 
 # CMSSW packages
 pushd $CMSSW_BASE/src
-git cms-merge-topic -u matteosan1:egm_tnp_80X
+git cms-merge-topic fcouderc:tnp_egm_80X
 popd
