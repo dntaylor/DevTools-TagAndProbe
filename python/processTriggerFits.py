@@ -82,12 +82,12 @@ def saveEff(obj,trigname,outfile,outdir):
     }
     
     ptvar = {
-        'electron' : 'probe_sc_pt',
+        'electron' : 'probe_Ele_pt',
         'muon'     : 'probe_pt',
     }
     
     etavar = {
-        'electron' : 'probe_sc_eta',
+        'electron' : 'probe_Ele_eta',
         'muon'     : 'probe_eta',
     }
     

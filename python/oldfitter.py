@@ -113,8 +113,8 @@ EfficiencyBins = cms.PSet(
 )
 if options.object=='electron':
     EfficiencyBins = cms.PSet(
-        probe_sc_pt  = cms.vdouble(*getBinning(options.object,'pt',trig=True)),
-        probe_sc_eta = cms.vdouble(*getBinning(options.object,'eta',trig=True)), 
+        probe_Ele_pt  = cms.vdouble(*getBinning(options.object,'pt',trig=True)),
+        probe_Ele_eta = cms.vdouble(*getBinning(options.object,'eta',trig=True)), 
     )
 
 EfficiencyBinningSpecification = cms.PSet(
@@ -190,8 +190,8 @@ if options.object=='muon':
                                                           ))
 if options.object=='electron':
     setattr(process.TnPMeasurement, 'Variables', cms.PSet(mass = cms.vstring("Tag-Probe Mass", "60.0", "120.0", "GeV/c^{2}"),
-                                                          probe_sc_pt = cms.vstring("Probe p_{T}", "0", "1000", "GeV/c"),
-                                                          probe_sc_eta = cms.vstring("Probe #eta", "0", "2.5", ""),
+                                                          probe_Ele_pt = cms.vstring("Probe p_{T}", "0", "1000", "GeV/c"),
+                                                          probe_Ele_eta = cms.vstring("Probe #eta", "0", "2.5", ""),
                                                           #totWeight = cms.vstring("totWeight", "-100000000", "1000000000", ""),
                                                           ))
 

@@ -195,7 +195,7 @@ def runfit(args):
 
     # trees for mc, mc lo (for systematics), and data
     treeNameMap = {
-        'electron' : 'GsfElectronToRECO/fitter_tree',
+        'electron' : 'GsfElectronToEleID/fitter_tree',
         'electronTrig' : 'GsfElectronToTrigger/fitter_tree',
         'muon'     : 'muonEffs/fitter_tree',
     }
