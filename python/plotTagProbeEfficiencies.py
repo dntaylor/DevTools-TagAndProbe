@@ -71,7 +71,7 @@ def plot(obj,idName,idNameNice):
         ]
     
     if 'Iso' in idName:
-        eff = lambda pt, eta, var : getattr(ROOT, idName)(pt, eta, True, 0., var)
+        eff = lambda pt, eta, var : getattr(ROOT, idName)(pt, eta, True, True if 'Hpp' in idName else 0., var)
     else:
         eff = lambda pt, eta, var : getattr(ROOT, idName)(pt, eta, True, var)
     
