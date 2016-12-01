@@ -23,7 +23,7 @@ trackIsoDef = 'trackIso()/pt()'
 options['HLTProcessName']          = "HLT"
 options['MUON_COLL']               = "slimmedMuons"
 options['MUON_CUTS']               = "((isTrackerMuon || isGlobalMuon) && abs(eta)<2.4 && pt>5)"
-options['MUON_TAG_CUTS']           = "(userInt('isTightMuon')==1 && pt > 25 && abs(eta) < 2.1 && "+isolationDef+" < 0.15)"
+options['MUON_TAG_CUTS']           = "(userInt('isTightMuon')==1 && pt > 30 && abs(eta) < 2.1 && "+isolationDef+" < 0.15)"
 options['MAXEVENTS']               = cms.untracked.int32(-1) 
 options['OUTPUTEDMFILENAME']       = 'edmFile.root'
 options['DEBUG']                   = cms.bool(False)
