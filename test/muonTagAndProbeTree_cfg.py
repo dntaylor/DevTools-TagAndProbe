@@ -31,9 +31,8 @@ options['DEBUG']                   = cms.bool(False)
 from PhysicsTools.TagAndProbe.treeMakerOptions_cfi import *
 
 if (varOptions.isMC):
-    # TODO update to new MC
-    #options['INPUT_FILE_NAME']     = '/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0_ext1-v1/00000/00F0B3DC-211B-E611-A6A0-001E67248A39.root'
-    options['INPUT_FILE_NAME']     = '/store/mc/RunIISpring16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_miniAODv2_v0-v1/50000/000FF6AC-9F2A-E611-A063-0CC47A4C8EB0.root'
+    #options['INPUT_FILE_NAME']     = '/store/mc/RunIISummer16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/110000/005ED0EB-79F1-E611-B6DA-02163E011C2B.root'
+    options['INPUT_FILE_NAME']     = '/store/mc/RunIISummer16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/120000/02A210D6-F5C3-E611-B570-008CFA197BD4.root'
     options['OUTPUT_FILE_NAME']    = "TnPTree_mc_muon.root"
     options['TnPPATHS']            = cms.vstring()#"HLT_IsoTkMu24_v*")
     options['TnPHLTTagFilters']    = cms.vstring()#"hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09")
