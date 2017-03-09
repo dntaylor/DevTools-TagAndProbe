@@ -68,8 +68,10 @@ class PassFailSimulFitter :
         if type(allProbeCondition) is list :
             allProbeCondition = '&&'.join(allProbeCondition)
         if weightVariable=='totWeight': # need to protect against inf for PU bin 37
-            tree.Draw('mass >> {0}_passed_probes'.format(dataName), '(truePU==37 ? 0 : {0})*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
-            tree.Draw('mass >> {0}_failed_probes'.format(dataName), '(truePU==37 ? 0 : {0})*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+            #tree.Draw('mass >> {0}_passed_probes'.format(dataName), '(truePU==37 ? 0 : {0})*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+            #tree.Draw('mass >> {0}_failed_probes'.format(dataName), '(truePU==37 ? 0 : {0})*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+            tree.Draw('mass >> {0}_passed_probes'.format(dataName), '({0})*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+            tree.Draw('mass >> {0}_failed_probes'.format(dataName), '({0})*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
         else:
             tree.Draw('mass >> {0}_passed_probes'.format(dataName), '{0}*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
             tree.Draw('mass >> {0}_failed_probes'.format(dataName), '{0}*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')

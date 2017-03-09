@@ -34,8 +34,8 @@ if (varOptions.isMC):
     #options['INPUT_FILE_NAME']     = '/store/mc/RunIISummer16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2-v1/110000/005ED0EB-79F1-E611-B6DA-02163E011C2B.root'
     options['INPUT_FILE_NAME']     = '/store/mc/RunIISummer16MiniAODv2/DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1-v2/120000/02A210D6-F5C3-E611-B570-008CFA197BD4.root'
     options['OUTPUT_FILE_NAME']    = "TnPTree_mc_muon.root"
-    options['TnPPATHS']            = cms.vstring()#"HLT_IsoTkMu24_v*")
-    options['TnPHLTTagFilters']    = cms.vstring()#"hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09")
+    options['TnPPATHS']            = ["HLT_IsoTkMu24_v*",]
+    options['TnPHLTTagFilters']    = ["hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09"]
     options['TnPHLTProbeFilters']  = cms.vstring()
     options['HLTFILTERTOMEASURE']  = cms.vstring()
     options['GLOBALTAG']           = 'auto:run2_mc'
@@ -164,7 +164,7 @@ trigger_filters['probeTriggersIsoMu24ORIsoTkMu24'] = {
     'isAND': False,
     'inputs': 'probeMuons',
 }
-trigger_filters['probeTriggersIsoMu24ORIsoTkMu24OrMu50'] = {
+trigger_filters['probeTriggersIsoMu24ORIsoTkMu24ORMu50'] = {
     'filterNames': {
         'v4.2': ["hltL3crIsoL1sMu22L1f0L2f10QL3f24QL3trkIsoFiltered0p09","hltL3fL1sMu22L1f0Tkf24QL3trkIsoFiltered0p09","hltL3fL1sMu22Or25L1f0L2f10QL3Filtered50Q"],
     },
@@ -238,7 +238,7 @@ process.tagMuonsTriggerMatched = cms.EDProducer("PatMuonTriggerCandProducer",
     inputs      = cms.InputTag("tagMuons"),
     bits        = cms.InputTag('TriggerResults::HLT'),
     objects     = cms.InputTag('selectedPatTrigger'),
-    dR          = cms.double(0.1),
+    dR          = cms.double(0.3),
     isAND       = cms.bool(True)
     )
 
@@ -262,7 +262,7 @@ for trigger,args in trigger_filters.iteritems():
         inputs = cms.InputTag(args['inputs']),
         bits        = cms.InputTag('TriggerResults::HLT'),
         objects     = cms.InputTag('selectedPatTrigger'),
-        dR          = cms.double(0.1),
+        dR          = cms.double(0.3),
         isAND       = cms.bool(args['isAND'])
     )
     setattr(process, trigger, mod)
@@ -274,7 +274,7 @@ process.tagTriggersMu17Leg = cms.EDProducer("PatMuonTriggerCandProducer",
     inputs      = cms.InputTag("tagMuonsTriggerMatched"),
     bits        = cms.InputTag('TriggerResults::HLT'),
     objects     = cms.InputTag('selectedPatTrigger'),
-    dR          = cms.double(0.1),
+    dR          = cms.double(0.3),
     isAND       = cms.bool(True)
     )
 process.probeTriggerSeq += process.tagTriggersMu17Leg

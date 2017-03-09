@@ -1,17 +1,10 @@
 # single electron
-passingHLTEle25Eta2p1Tight
-passingHLTEle27Eta2p1
-passingHLTEle27Tight
-passingHLTEle45
-passingHLTSingleEleSoup
+passingEle23
+passingEle17
+passingEle12
+passingEle27WPTight
+passingEle27Eta2p1WPTight
 # double electron
-passingHLTEle23Ele12Leg1
-passingHLTEle23Ele12Leg2 tag_passingEle23Ele12Leg1
-passingHLTEle23Ele12DZ tag_passingEle23Ele12Leg1 passingHLTEle23Ele12Leg2
-# muon electron
-#passingHLTMu23Ele12ELeg
-#passingHLTMu23Ele8ELeg
-#passingHLTMu8Ele17ELeg
-#passingHLTMu8Ele23ELeg
-# tau electron
-passingHLTEle24Tau20LegSingleL1
+passingEle23Leg
+passingEle12Leg tag_passingEle23Leg
+passingEle12LegDZ tag_passingEle23Leg passingEle12Leg

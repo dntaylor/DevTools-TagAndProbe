@@ -1,23 +1,16 @@
 # single muon
-passingIsoMu22
-passingIsoTkMu22
-passingIsoMu22ORIsoTkMu22
-passingMu45Eta2p1
-passingMu50
-passingSingleMuSoup
-# double muon
 passingMu17
-passingMu8 tag_passingMu17
-passingTkMu8 tag_passingMu17
-passingMu8ORTkMu8 tag_passingMu17
-passingMu8DZ tag_passingMu17 passingMu8
-passingTkMu8DZ tag_passingMu17 passingTkMu8
-passingMu8ORTkMu8DZ tag_passingMu17 passingMu8ORTkMu8
-# muon eg
-#passingMu17Ele12MLeg
-#passingMu23Ele12MLeg
-#passingMu23Ele8MLeg
-#passingMu8Ele17MLeg
-#passingMu8Ele23MLeg
-# muon tau
-passingMu19Tau20MLegSingleL1
+passingMu8
+passingIsoMu24
+passingIsoTkMu24
+passingIsoMu24ORIsoTkMu24
+passingMu50
+passingIsoMu24ORIsoTkMu24ORMu50
+# double muon
+passingMu17Leg
+passingMu8Leg tag_passingMu17Leg
+passingTkMu8Leg tag_passingMu17Leg
+passingMu8ORTkMu8Leg tag_passingMu17Leg
+passingMu8LegDZ tag_passingMu17Leg passingMu8Leg
+passingTkMu8LegDZ tag_passingMu17Leg passingTkMu8Leg
+passingMu8ORTkMu8LegDZ tag_passingMu17Leg passingMu8ORTkMu8Leg

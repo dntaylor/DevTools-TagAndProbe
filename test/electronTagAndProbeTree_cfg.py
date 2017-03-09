@@ -57,10 +57,10 @@ options['isMC']                 = cms.bool(varOptions.isMC)
 if (varOptions.isMC):
     # TODO add MC triggers
     options['OUTPUT_FILE_NAME']    = "TnPTree_mc_electron.root"
-    options['TnPPATHS']            = cms.vstring()
-    options['TnPHLTTagFilters']    = cms.vstring()
+    options['TnPPATHS']            = cms.vstring("HLT_Ele27_eta2p1_WPTight_Gsf_v*")
+    options['TnPHLTTagFilters']    = cms.vstring("hltEle27erWPTightGsfTrackIsoFilter")
     options['TnPHLTProbeFilters']  = cms.vstring()
-    options['HLTFILTERTOMEASURE']  = cms.vstring("")
+    options['HLTFILTERTOMEASURE']  = cms.vstring("hltEle27erWPTightGsfTrackIsoFilter")
     options['GLOBALTAG']           = 'auto:run2_mc'
     options['EVENTSToPROCESS']     = cms.untracked.VEventRange()
 else:
@@ -276,7 +276,7 @@ for trigger,args in trigger_filters.iteritems():
         inputs = cms.InputTag(args['inputs']),
         bits        = cms.InputTag('TriggerResults::HLT'),
         objects     = cms.InputTag('selectedPatTrigger'),
-        dR          = cms.double(0.1),
+        dR          = cms.double(0.3),
         isAND       = cms.bool(args['isAND'])
     )
     setattr(process, trigger, mod)
@@ -288,7 +288,7 @@ process.tagTriggersEle23Leg = cms.EDProducer("PatElectronTriggerCandProducer",
     inputs      = cms.InputTag("goodElectronsTagHLT"),
     bits        = cms.InputTag('TriggerResults::HLT'),
     objects     = cms.InputTag('selectedPatTrigger'),
-    dR          = cms.double(0.1),
+    dR          = cms.double(0.3),
     isAND       = cms.bool(True)
     )
 process.goodElectronsMeasureHLT += process.tagTriggersEle23Leg

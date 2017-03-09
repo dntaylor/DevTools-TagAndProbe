@@ -219,11 +219,15 @@ def runfit(args):
     ptBinMap = {
         'electron' : getBinning('electron','pt'),
         'muon'     : getBinning('muon','pt'),
+        'electronTrig' : getBinning('electron','pt',trig=True),
+        'muonTrig'     : getBinning('muon','pt',trig=True),
     }
 
     etaBinMap = {
         'electron' : getBinning('electron','eta'),
         'muon'     : getBinning('muon','eta'),
+        'electronTrig' : getBinning('electron','eta',trig=True),
+        'muonTrig'     : getBinning('muon','eta',trig=True),
     }
 
     # single bin
@@ -239,7 +243,7 @@ def runfit(args):
 
     ptVar = {
         'electron'     : 'probe_Ele_pt',
-        'electronTrig' : 'probe_sc_pt',
+        'electronTrig' : 'probe_Ele_pt',
         'muon'         : 'probe_pt',
         'muonTrig'     : 'probe_pt',
     }
@@ -252,67 +256,98 @@ def runfit(args):
     }
 
     binning = {}
-    binning_trig = {}
     for pb in range(len(ptBinMap[args.object][:-1])):
         ptlow = ptBinMap[args.object][pb]
         pthigh = ptBinMap[args.object][pb+1]
         ptname = 'pt{0}to{1}'.format(ptlow,pthigh)
         ptcut = '{0}>={1} && {0}<{2}'.format(ptVar[args.object],ptlow,pthigh)
-        ptcut_trig = '{0}>={1} && {0}<{2}'.format(ptVar[args.object+'Trig'],ptlow,pthigh)
         for eb in range(len(etaBinMap[args.object][:-1])):
             etalow = etaBinMap[args.object][eb]
             etahigh = etaBinMap[args.object][eb+1]
             etaname = 'eta{0}to{1}'.format(etalow,etahigh)
             etacut = '{0}>={1} && {0}<{2}'.format(etaVar[args.object],etalow,etahigh)
-            etacut_trig = '{0}>={1} && {0}<{2}'.format(etaVar[args.object+'Trig'],etalow,etahigh)
             binning['{0}_{1}'.format(ptname,etaname)] = [ptcut,etacut]
+
+    binning_trig = {}
+    for pb in range(len(ptBinMap[args.object+'Trig'][:-1])):
+        ptlow = ptBinMap[args.object+'Trig'][pb]
+        pthigh = ptBinMap[args.object+'Trig'][pb+1]
+        ptname = 'pt{0}to{1}'.format(ptlow,pthigh)
+        ptcut_trig = '{0}>={1} && {0}<{2}'.format(ptVar[args.object+'Trig'],ptlow,pthigh)
+        for eb in range(len(etaBinMap[args.object+'Trig'][:-1])):
+            etalow = etaBinMap[args.object+'Trig'][eb]
+            etahigh = etaBinMap[args.object+'Trig'][eb+1]
+            etaname = 'eta{0}to{1}'.format(etalow,etahigh)
+            etacut_trig = '{0}>={1} && {0}<{2}'.format(etaVar[args.object+'Trig'],etalow,etahigh)
             binning_trig['{0}_{1}'.format(ptname,etaname)] = [ptcut_trig,etacut_trig]
 
     commonVars = ['float {0}'.format(ptVar[args.object]), 'float {0}'.format(etaVar[args.object])]
     commonVars_trig = ['float {0}'.format(ptVar[args.object+'Trig']), 'float {0}'.format(etaVar[args.object+'Trig'])]
 
     # run the fits
-    fname = 'fits_{0}.root'.format(args.object)
+    fname = args.outputFileName
     fout = ROOT.TFile(fname, 'recreate')
     directory = '{0}Fits'.format(args.object)
     fout.mkdir(directory).cd()
 
-    if args.object=='electron':
-        ## Trig
-        #fit('HLTEle23',          [], 'passingHLTEle23',          binning_trig, commonVars_trig+['bool passingHLTEle23'],          tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTEle27',          [], 'passingHLTEle27',          binning_trig, commonVars_trig+['bool passingHLTEle27'],          tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTEle17Ele12Leg1', [], 'passingHLTEle17Ele12Leg1', binning_trig, commonVars_trig+['bool passingHLTEle17Ele12Leg1'], tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTEle17Ele12Leg2', [], 'passingHLTEle17Ele12Leg2', binning_trig, commonVars_trig+['bool passingHLTEle17Ele12Leg2'], tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTMu17Ele12ELeg',  [], 'passingHLTMu17Ele12ELeg',  binning_trig, commonVars_trig+['bool passingHLTMu17Ele12ELeg'],  tdata=tdata_trig, obj=args.object, alt=True)
-        # ID
-        fit('CutBasedIDVeto',   [], 'passingVeto',   binning, commonVars+['bool passingVeto'],   tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('CutBasedIDLoose',  [], 'passingLoose',  binning, commonVars+['bool passingLoose'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('CutBasedIDMedium', [], 'passingMedium', binning, commonVars+['bool passingMedium'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('CutBasedIDTight',  [], 'passingTight',  binning, commonVars+['bool passingTight'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-    if args.object=='muon':
-        ## Trig
-        #fit('HLTIsoMu20',                        [], 'passingIsoMu20',                       binning_trig, commonVars_trig+['bool passingIsoMu20'],                         tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTIsoTkMu20',                      [], 'passingIsoTkMu20',                     binning_trig, commonVars_trig+['bool passingIsoTkMu20'],                       tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTIsoMu20_OR_HLTIsoTkMu20',        [], '(passingIsoMu20 || passingIsoTkMu20)', binning_trig, commonVars_trig+['bool passingIsoMu20','bool passingIsoTkMu20'], tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTMu17Mu8Leg1',                    [], 'passingMu17',                          binning_trig, commonVars_trig+['bool passingMu17'],                            tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTMu17Mu8Leg2',                    [], 'passingMu8',                           binning_trig, commonVars_trig+['bool passingMu8'],                             tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTMu17TkMu8Leg2',                  [], 'passingTkMu8',                         binning_trig, commonVars_trig+['bool passingTkMu8'],                           tdata=tdata_trig, obj=args.object, alt=True)
-        #fit('HLTMu17Mu8Leg2_OR_HLTMu17TkMu8Leg', [], '(passingMu8 || passingTkMu8)',         binning_trig, commonVars_trig+['bool passingMu8','bool passingTkMu8'],         tdata=tdata_trig, obj=args.object, alt=True)
-        # ID
-        fit('HppLooseID',                [],                     'passingHppLooseID',  binning, commonVars+['bool passingHppLooseID'],                            tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('HppLooseIsoFromLooseID',    ['passingHppLooseID'],  'passingHppLooseIso', binning, commonVars+['bool passingHppLooseID','bool passingHppLooseIso'],  tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('HppMediumID',               [],                     'passingHppMediumID', binning, commonVars+['bool passingHppMediumID'],                           tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('HppMediumIsoFromMediumID',  ['passingHppMediumID'], 'passingHppMediumIso',binning, commonVars+['bool passingHppMediumID','bool passingHppMediumIso'],tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('LooseID',                   [],                     'passingLoose',       binning, commonVars+['bool passingLoose'],                                 tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('LooseIsoFromLooseID',       ['passingLoose'],       'probe_isoR04<0.25',  binning, commonVars+['bool passingLoose','float probe_isoR04'],            tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('MediumID',                  [],                     'passingMedium',      binning, commonVars+['bool passingMedium'],                                tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('LooseIsoFromMediumID',      ['passingMedium'],      'probe_isoR04<0.25',  binning, commonVars+['bool passingMedium','float probe_isoR04'],           tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('TightIsoFromMediumID',      ['passingMedium'],      'probe_isoR04<0.15',  binning, commonVars+['bool passingMedium','float probe_isoR04'],           tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('MediumIDICHEP',             [],                     'passingMediumICHEP', binning, commonVars+['bool passingMediumICHEP'],                           tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('LooseIsoFromMediumIDICHEP', ['passingMediumICHEP'], 'probe_isoR04<0.25',  binning, commonVars+['bool passingMediumICHEP','float probe_isoR04'],      tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('TightIsoFromMediumIDICHEP', ['passingMediumICHEP'], 'probe_isoR04<0.15',  binning, commonVars+['bool passingMediumICHEP','float probe_isoR04'],      tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('TightID',                   [],                     'passingTight',       binning, commonVars+['bool passingTight'],                                 tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
-        fit('TightIsoFromTightID',       ['passingTight'],       'probe_isoR04<0.15',  binning, commonVars+['bool passingTight','float probe_isoR04'],            tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+    idArgs = {
+        'electron': {
+            'CutBasedIDVeto':     {'condition': [], 'variable': 'passingVeto',   'fitVars': ['bool passingVeto']},
+            'CutBasedIDLoose':    {'condition': [], 'variable': 'passingLoose',  'fitVars': ['bool passingLoose']},
+            'CutBasedIDMedium':   {'condition': [], 'variable': 'passingMedium', 'fitVars': ['bool passingMedium']},
+            'CutBasedIDTight':    {'condition': [], 'variable': 'passingTight',  'fitVars': ['bool passingTight']},
+        },
+        'muon': {
+            'HppLooseID':                {'conditions': [],                     'variable': 'passingHppLooseID',  'fitVars': ['bool passingHppLooseID']},
+            'HppLooseIsoFromLooseID':    {'conditions': ['passingHppLooseID'],  'variable': 'passingHppLooseIso', 'fitVars': ['bool passingHppLooseID','bool passingHppLooseIso']},
+            'HppMediumID':               {'conditions': [],                     'variable': 'passingHppMediumID', 'fitVars': ['bool passingHppMediumID']},
+            'HppMediumIsoFromMediumID':  {'conditions': ['passingHppMediumID'], 'variable': 'passingHppMediumIso','fitVars': ['bool passingHppMediumID','bool passingHppMediumIso']},
+            'LooseID':                   {'conditions': [],                     'variable': 'passingLoose',       'fitVars': ['bool passingLoose']},
+            'LooseIsoFromLooseID':       {'conditions': ['passingLoose'],       'variable': 'probe_isoR04<0.25',  'fitVars': ['bool passingLoose','float probe_isoR04']},
+            'MediumID':                  {'conditions': [],                     'variable': 'passingMedium',      'fitVars': ['bool passingMedium']},
+            'LooseIsoFromMediumID':      {'conditions': ['passingMedium'],      'variable': 'probe_isoR04<0.25',  'fitVars': ['bool passingMedium','float probe_isoR04']},
+            'TightIsoFromMediumID':      {'conditions': ['passingMedium'],      'variable': 'probe_isoR04<0.15',  'fitVars': ['bool passingMedium','float probe_isoR04']},
+            'MediumIDICHEP':             {'conditions': [],                     'variable': 'passingMediumICHEP', 'fitVars': ['bool passingMediumICHEP']},
+            'LooseIsoFromMediumIDICHEP': {'conditions': ['passingMediumICHEP'], 'variable': 'probe_isoR04<0.25',  'fitVars': ['bool passingMediumICHEP','float probe_isoR04']},
+            'TightIsoFromMediumIDICHEP': {'conditions': ['passingMediumICHEP'], 'variable': 'probe_isoR04<0.15',  'fitVars': ['bool passingMediumICHEP','float probe_isoR04']},
+            'TightID':                   {'conditions': [],                     'variable': 'passingTight',       'fitVars': ['bool passingTight']},
+            'TightIsoFromTightID':       {'conditions': ['passingTight'],       'variable': 'probe_isoR04<0.15',  'fitVars': ['bool passingTight','float probe_isoR04']},
+
+        },
+    }
+
+    trigArgs = {
+        'electron': {
+            'Ele27WPTight':       {'condition': [],                                               'variable': 'passingEle27WPTight',       'fitVars': ['bool passingEle27WPTight']},
+            'Ele27Eta2p1WPTight': {'condition': [],                                               'variable': 'passingEle27Eta2p1WPTight', 'fitVars': ['bool passingEle27Eta2p1WPTight']},
+            'Ele23Leg':           {'condition': [],                                               'variable': 'passingEle23Leg',           'fitVars': ['bool passingEle23Leg']},
+            'Ele12Leg':           {'condition': ['tag_passingEle23Ele12Leg1'],                    'variable': 'passingEle12Leg',           'fitVars': ['bool tag_passingEle23Ele12Leg1','bool passingEle12Leg']},
+            'Ele12LegDZ':         {'condition': ['tag_passingEle23Ele12Leg1 && passingEle12Leg'], 'variable': 'passingEle12LegDZ',         'fitVars': ['bool tag_passingEle23Ele12Leg1','bool passingEle12Leg','bool passingEle12LegDZ']},
+        },
+        'muon': {
+            'IsoMu24':                  {'condition': [],                                          'variable': 'passingIsoMu24',                   'fitVars': ['bool passingIsoMu24']},
+            'IsoTkMu24':                {'condition': [],                                          'variable': 'passingIsoTkMu24',                 'fitVars': ['bool passingIsoTkMu24']},
+            'IsoMu24ORIsoTkMu24':       {'condition': [],                                          'variable': 'passingIsoMu24ORIsoTkMu24',        'fitVars': ['bool passingIsoMu24ORIsoTkMu24']},
+            'Mu50':                     {'condition': [],                                          'variable': 'passingMu50',                      'fitVars': ['bool passingMu50']},
+            'IsoMu24ORIsoTkMu24ORMu50': {'condition': [],                                          'variable': 'passingIsoMu24ORIsoTkMu24ORMu50',  'fitVars': ['bool passingIsoMu24ORIsoTkMu24ORMu50']},
+            'Mu17Leg':                  {'condition': [],                                          'variable': 'passingMu17Leg',                   'fitVars': ['bool passingMu17Leg']},
+            'Mu8Leg':                   {'condition': ['tag_passingMu17'],                         'variable': 'passingMu8Leg',                    'fitVars': ['bool tag_passingMu17','bool passingMu8Leg']},
+            'TkMu8Leg':                 {'condition': ['tag_passingMu17'],                         'variable': 'passingTkMu8Leg',                  'fitVars': ['bool tag_passingMu17','bool passingTkMu8Leg']},
+            'Mu8ORTkMu8Leg':            {'condition': ['tag_passingMu17'],                         'variable': 'passingMu8ORTkMu8Leg',             'fitVars': ['bool tag_passingMu17','bool passingMu8ORTkMu8Leg']},
+            'Mu8LegDZ':                 {'condition': ['tag_passingMu17 && passingMu8Leg'],        'variable': 'passingMu8LegDZ',                  'fitVars': ['bool tag_passingMu17','bool passingMu8Leg','bool passingMu8LegDZ']},
+            'TkMu8LegDZ':               {'condition': ['tag_passingMu17 && passingTkMu8Leg'],      'variable': 'passingTkMu8LegDZ',                'fitVars': ['bool tag_passingMu17','bool passingTkMu8Leg','bool passingTkMu8LegDZ']},
+            'Mu8ORTkMu8LegDZ':          {'condition': ['tag_passingMu17 && passingMu8ORTkMu8Leg'], 'variable': 'passingMu8ORTkMu8LegDZ',           'fitVars': ['bool tag_passingMu17','bool passingMu8ORTkMu8Leg','bool passingMu8ORTkMu8LegDZ']},
+        },
+    }
+
+    if not args.fitsToRun:
+        args.fitsToRun = idArgs[args.object].keys()+trigArgs[args.object].keys()
+
+    for trigArg,vals in trigArgs[args.object].iteritems():
+        if trigArg in args.fitsToRun: fit(trigArg, vals['condition'], vals['variable'], binning_trig, commonVars_trig+vals['fitVars'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata_trig, obj=args.object)
+    for idArg,vals in idArgs[args.object].iteritems():
+        if idArg in args.fitsToRun: fit(idArg, vals['condition'], vals['variable'], binning, commonVars+vals['fitVars'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
+
 
 
 def parse_command_line(argv):
@@ -322,6 +357,8 @@ def parse_command_line(argv):
     parser.add_argument('--mcFileName', '-mc', type=str, default='TnPTree_mc.root', help='Filename for MC TagAndProbe Tree')
     parser.add_argument('--mcLOFileName', '-mcLO', type=str, default='TnPTree_mcLO.root', help='Filename for MC LO TagAndProbe Tree')
     parser.add_argument('--dataFileName', '-data', type=str, default='TnPTree_data.root', help='Filename for Data TagAndProbe Tree')
+    parser.add_argument('--fitsToRun', type=str, nargs='*', help='Run selected fits')
+    parser.add_argument('--outputFileName', type=str, default='fits.root', help='Filename for output')
 
     return parser.parse_args(argv)
 
