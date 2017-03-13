@@ -210,8 +210,13 @@ def runfit(args):
     tdata = fdata.Get(treeNameMap[args.object])
 
     if args.object=='electron':
+        tmc_trig = fmc.Get(treeNameMap[args.object+'Trig'])
+        tmcAlt_trig = fmcAlt.Get(treeNameMap[args.object+'Trig'])
         tdata_trig = fdata.Get(treeNameMap[args.object+'Trig'])
+
     if args.object=='muon':
+        tmc_trig = tmc
+        tmcAlt_trig = tmcAlt
         tdata_trig = tdata
 
 
@@ -344,7 +349,7 @@ def runfit(args):
         args.fitsToRun = idArgs[args.object].keys()+trigArgs[args.object].keys()
 
     for trigArg,vals in trigArgs[args.object].iteritems():
-        if trigArg in args.fitsToRun: fit(trigArg, vals['condition'], vals['variable'], binning_trig, commonVars_trig+vals['fitVars'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata_trig, obj=args.object)
+        if trigArg in args.fitsToRun: fit(trigArg, vals['condition'], vals['variable'], binning_trig, commonVars_trig+vals['fitVars'], tmc=tmc_trig, tmcAlt=tmcAlt_trig, tdata=tdata_trig, obj=args.object)
     for idArg,vals in idArgs[args.object].iteritems():
         if idArg in args.fitsToRun: fit(idArg, vals['condition'], vals['variable'], binning, commonVars+vals['fitVars'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
 

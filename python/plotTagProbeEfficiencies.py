@@ -54,13 +54,16 @@ def save2D(eff,savename,outdir):
         canvas.Print(name)
 
 
-def plot(obj,idName,idNameNice):
+def plot(args):
 
-    ptbins = getBinning(obj,'pt')
-    etabins = getBinning(obj,'eta')
-    colors = [ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10]
+    ptbins = getBinning(args.object,'pt',trig=args.trig)
+    etabins = getBinning(args.object,'eta',trig=args.trig)
+    colors = [
+        ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10,
+        ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10,
+    ]
     
-    ROOT.gROOT.ProcessLine('.L fits_{obj}/{id}/{id}.C+'.format(obj=obj,id=idName))
+    ROOT.gROOT.ProcessLine('.L {output}/{id}/{id}.C+'.format(output=args.output,id=args.idName))
     
     variations = [
         ROOT.STAT_UP,
@@ -70,10 +73,13 @@ def plot(obj,idName,idNameNice):
         ROOT.SYST_CMSSHAPE
         ]
     
-    if 'Iso' in idName:
-        eff = lambda pt, eta, var : getattr(ROOT, idName)(pt, eta, True, True if 'Hpp' in idName else 0., var)
+    if args.trig:
+        eff = lambda pt, eta, var : min([max([getattr(ROOT, args.idName)(pt, eta, True, var),0.]),1.])
     else:
-        eff = lambda pt, eta, var : getattr(ROOT, idName)(pt, eta, True, var)
+        if 'Iso' in args.idName:
+            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, True if 'Hpp' in args.idName else 0., var)
+        else:
+            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
     
     effCentral = lambda pt, eta : eff(pt, eta, ROOT.CENTRAL)
     effMax = lambda pt, eta : max(map(lambda v : eff(pt,eta,v), variations))-effCentral(pt,eta)
@@ -108,11 +114,11 @@ def plot(obj,idName,idNameNice):
     leg = canvas.BuildLegend(.5,.2,.9,.4)
     for entry in leg.GetListOfPrimitives() :
         entry.SetOption('lp')
-    leg.SetHeader(idNameNice)
+    leg.SetHeader(args.idNameNice)
     
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.png'.format(obj,idName))
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.pdf'.format(obj,idName))
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_pt.root'.format(obj,idName))
+    canvas.Print('{0}/{1}/scaleFactor_vs_pt.png'.format(args.output,args.idName))
+    canvas.Print('{0}/{1}/scaleFactor_vs_pt.pdf'.format(args.output,args.idName))
+    canvas.Print('{0}/{1}/scaleFactor_vs_pt.root'.format(args.output,args.idName))
 
     # eta bins
     xbins = array.array('d', [0.5*sum(etabins[i:i+2]) for i in range(len(etabins)-1)])
@@ -142,14 +148,14 @@ def plot(obj,idName,idNameNice):
     leg = canvas.BuildLegend(.5,.2,.9,.4)
     for entry in leg.GetListOfPrimitives() :
         entry.SetOption('lp')
-    leg.SetHeader(idNameNice)
+    leg.SetHeader(args.idNameNice)
     
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.png'.format(obj,idName))
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.pdf'.format(obj,idName))
-    canvas.Print('fits_{0}/{1}/scaleFactor_vs_eta.root'.format(obj,idName))
+    canvas.Print('{0}/{1}/scaleFactor_vs_eta.png'.format(args.output,args.idName))
+    canvas.Print('{0}/{1}/scaleFactor_vs_eta.pdf'.format(args.output,args.idName))
+    canvas.Print('{0}/{1}/scaleFactor_vs_eta.root'.format(args.output,args.idName))
 
     # pt eta bins
-    tfile = ROOT.TFile('fits_{0}/{1}_scalefactor.root'.format(obj,idName),'recreate')
+    tfile = ROOT.TFile('{0}/{1}_scalefactor.root'.format(args.output,args.idName),'recreate')
     pteta = ROOT.TH2F('scalefactor','scalefactor;Probe p_{T};Probe #eta',len(ptbins)-1,array.array('d',ptbins),len(etabins)-1,array.array('d',etabins))
     for p in range(len(ptbins)-1):
         pt = .5*sum(ptbins[p:p+2])
@@ -163,7 +169,7 @@ def plot(obj,idName,idNameNice):
             pteta.SetBinContent(pteta.FindBin(pt,eta),sf)
             pteta.SetBinError(pteta.FindBin(pt,eta),err)
 
-    save2D(pteta.Clone(),'scaleFactor','fits_{0}/{1}'.format(obj,idName))
+    save2D(pteta.Clone(),'scaleFactor','{0}/{1}'.format(args.output,args.idName))
     pteta.Write()
     
     # ------- Latex
@@ -217,8 +223,8 @@ def plot(obj,idName,idNameNice):
     \\caption{Efficiency table for %s}
     \\end{table}
     %% Generated with DevTools/TagAndProbe version %s
-    ''' % (idName, __gitversion__)
-    with open('fits_{0}/{1}/table.tex'.format(obj,idName), 'w') as fout :
+    ''' % (args.idName, __gitversion__)
+    with open('{0}/{1}/table.tex'.format(args.output,args.idName), 'w') as fout :
         fout.write(output)
 
 
@@ -226,8 +232,10 @@ def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='TagAndProbe Plotter')
 
     parser.add_argument('object', type=str, choices=['electron','muon'], help='Physics object')
+    parser.add_argument('output', type=str, help='Directory for output')
     parser.add_argument('idName', type=str, help='Name of ID')
     parser.add_argument('idNameNice', type=str, help='Name of ID for printing')
+    parser.add_argument('--trig', action='store_true', help='Is a trigger')
 
     return parser.parse_args(argv)
 
@@ -238,7 +246,7 @@ def main(argv=None):
 
     args = parse_command_line(argv)
 
-    plot(args.object,args.idName,args.idNameNice)
+    plot(args)
 
     return 0
 

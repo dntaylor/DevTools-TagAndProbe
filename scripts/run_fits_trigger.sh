@@ -9,7 +9,9 @@ while read idConditions; do
     if [ "${#args[@]}" -gt "1" ]; then
         conds=$(IFS=, ; echo "${args[*]:1}")
         nohup cmsRun DevTools/TagAndProbe/python/oldfitter.py object=$obj inputFileName=$baseDir/data.root conditions=$conds idName=${args[0]} &
+        nohup cmsRun DevTools/TagAndProbe/python/oldfitter.py object=$obj inputFileName=$baseDir/dy_nlo.root conditions=$conds idName=${args[0]} isMC=1 &
     else
         nohup cmsRun DevTools/TagAndProbe/python/oldfitter.py object=$obj inputFileName=$baseDir/data.root idName=${args[0]} &
+        nohup cmsRun DevTools/TagAndProbe/python/oldfitter.py object=$obj inputFileName=$baseDir/dy_nlo.root idName=${args[0]} isMC=1 &
     fi
 done < $inputfile

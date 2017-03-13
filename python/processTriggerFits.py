@@ -100,9 +100,17 @@ def saveEff(obj,trigname,outfile,outdir):
     canvas = tfile.Get('{0}/{1}/cnt_eff_plots/{2}'.format(effdir[obj],directory,effname))
     eff = canvas.GetPrimitive(effname)
 
+    mcfname = 'efficiency-mc-{0}.root'.format(trigname)
+    mctfile = ROOT.TFile(mcfname)
+    mcdirectory = mctfile.Get(effdir[obj]).GetListOfKeys()[0].GetName()
+    mceffname = [x.GetName() for x in mctfile.Get('{0}/{1}/cnt_eff_plots'.format(effdir[obj],mcdirectory)).GetListOfKeys() if x.GetName().startswith('{0}_{1}'.format(ptvar[obj],etavar[obj]))][0]
+    mccanvas = mctfile.Get('{0}/{1}/cnt_eff_plots/{2}'.format(effdir[obj],mcdirectory,mceffname))
+    mceff = mccanvas.GetPrimitive(mceffname)
+
     outfile.cd()
     outfile.mkdir(trigname).cd()
     eff.Write()
+    mceff.Write()
     
     # plot 2d and 1d efficiencies
     ptbins = getBinning(obj,'pt',trig=True)
@@ -111,6 +119,9 @@ def saveEff(obj,trigname,outfile,outdir):
     save2D(eff.Clone(),trigname,outdir)
     save1D(eff,'pt',trigname+'_pt',outdir)
     save1D(eff,'eta',trigname+'_eta',outdir)
+    save2D(mceff.Clone(),trigname+'_mc',outdir)
+    save1D(mceff,'pt',trigname+'_mc_pt',outdir)
+    save1D(mceff,'eta',trigname+'_mc_eta',outdir)
 
 def doAllEfficiencies(obj):
     outdir = 'fits_{0}_trigger'.format(obj)
@@ -122,28 +133,21 @@ def doAllEfficiencies(obj):
             'passingHLTEle23Ele12DZ',
             'passingHLTEle23Ele12Leg1',
             'passingHLTEle23Ele12Leg2',
-            'passingHLTEle24Tau20LegSingleL1',
-            'passingHLTEle25Eta2p1Tight',
-            'passingHLTEle27Eta2p1',
             'passingHLTEle27Tight',
             'passingHLTEle45',
-            'passingHLTSingleEleSoup',
         ],
         'muon': [
-            'passingIsoMu22',
-            'passingIsoMu22ORIsoTkMu22',
-            'passingIsoTkMu22',
-            'passingMu17',
-            'passingMu19Tau20MLegSingleL1',
-            'passingMu8',
-            'passingMu8DZ',
-            'passingMu8ORTkMu8',
-            'passingMu8ORTkMu8DZ',
-            'passingTkMu8',
-            'passingTkMu8DZ',
-            'passingMu45Eta2p1',
+            'passingIsoMu24',
+            'passingIsoMu24ORIsoTkMu24',
+            'passingIsoTkMu24',
+            'passingMu17Leg',
+            'passingMu8Leg',
+            'passingMu8LegDZ',
+            'passingMu8ORTkMu8Leg',
+            'passingMu8ORTkMu8LegDZ',
+            'passingTkMu8Leg',
+            'passingTkMu8LegDZ',
             'passingMu50',
-            'passingSingleMuSoup',
         ],
     }
 
@@ -158,7 +162,7 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     doAllEfficiencies('muon')
-    doAllEfficiencies('electron')
+    #doAllEfficiencies('electron')
 
 
 if __name__ == "__main__":

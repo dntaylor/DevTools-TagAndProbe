@@ -110,7 +110,7 @@ class PassFailSimulFitter :
         signalFractionPassing = (nPassCenter-nPassSides/2)/nPass if nPass else 0.
 
         initialEff = w.var('efficiency').getVal()
-        nSignal = min(nPass*signalFractionPassing/initialEff, nPass+nFail)
+        nSignal = min(nPass*signalFractionPassing/initialEff, nPass+nFail) if initialEff else nPass+nFail
         w.var('numSignalAll').setVal(nSignal)
         # Signal cannot be more than total data entries
         # but we leave wiggle room so that the uncertainty on low-background fits is still ok
