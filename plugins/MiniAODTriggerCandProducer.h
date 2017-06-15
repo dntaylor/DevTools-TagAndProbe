@@ -92,7 +92,7 @@ void MiniAODTriggerCandProducer<T>::produce(edm::Event &iEvent, const edm::Event
   iEvent.getByToken(inputs_, inputs);
 
   // Create the output collection
-  std::auto_ptr<TRefVector> outColRef(new TRefVector);
+  std::unique_ptr<TRefVector> outColRef(new TRefVector);
   
   if (!triggerBits.isValid()) {
     LogDebug("") << "TriggerResults product not found - returning result=false!";
@@ -124,7 +124,7 @@ void MiniAODTriggerCandProducer<T>::produce(edm::Event &iEvent, const edm::Event
       outColRef->push_back(ref);
   }	  
 
-  iEvent.put(outColRef);
+  iEvent.put(std::move(outColRef));
 }
 
 template <class T>
