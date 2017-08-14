@@ -76,8 +76,8 @@ def plot(args):
     if args.trig:
         eff = lambda pt, eta, var : min([max([getattr(ROOT, args.idName)(pt, eta, True, var),0.]),1.])
     else:
-        if args.idName=='Preselection' and args.object=='photon':
-            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, False, var)
+        if args.object=='photon':
+            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, 1.0, True, False, var) # args: pt, eta, mva, pre, el-veto
         elif 'Iso' in args.idName:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, True if 'Hpp' in args.idName else 0., var)
         else:

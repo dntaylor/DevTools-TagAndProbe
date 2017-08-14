@@ -237,7 +237,9 @@ def runfit(args):
     fout.mkdir(directory).cd()
 
     idArgs = {
-        'Preselection':     {'condition': ['g_passElectronVeto<0.5'], 'variable': 'g_passPreselectionNoElectronVeto',   'fitVars': ['bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto']},
+        'Preselection':     {'condition': ['g_passElectronVeto<0.5'],                                        'variable': 'g_passPreselectionNoElectronVeto',   'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto']},
+        'MVA0p0Pre'   :     {'condition': ['g_passElectronVeto<0.5','g_passPreselectionNoElectronVeto>0.5'], 'variable': 'g_mvaNonTrigValues>0.0',             'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto']},
+        'MVA0p0'      :     {'condition': ['g_passElectronVeto<0.5'],                                        'variable': 'g_mvaNonTrigValues>0.0',             'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto']},
     }
 
     for idArg,vals in idArgs.iteritems():
