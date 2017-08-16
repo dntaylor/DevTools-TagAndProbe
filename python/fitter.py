@@ -235,17 +235,6 @@ def runfit(args):
         'muonTrig'     : getBinning('muon','eta',trig=True),
     }
 
-    # single bin
-    #ptBinMap = {
-    #    'electron' : [10,200],
-    #    'muon'     : [10,200],
-    #}
-
-    #etaBinMap = {
-    #    'electron' : [-2.5,2.5],
-    #    'muon'     : [-2.4,2.4],
-    #}
-
     ptVar = {
         'electron'     : 'probe_Ele_pt',
         'electronTrig' : 'probe_Ele_pt',
@@ -323,25 +312,25 @@ def runfit(args):
 
     trigArgs = {
         'electron': {
-            'Ele27WPTight':       {'condition': [],                                               'variable': 'passingEle27WPTight',       'fitVars': ['bool passingEle27WPTight']},
-            'Ele27Eta2p1WPTight': {'condition': [],                                               'variable': 'passingEle27Eta2p1WPTight', 'fitVars': ['bool passingEle27Eta2p1WPTight']},
-            'Ele23Leg':           {'condition': [],                                               'variable': 'passingEle23Leg',           'fitVars': ['bool passingEle23Leg']},
-            'Ele12Leg':           {'condition': ['tag_passingEle23Ele12Leg1'],                    'variable': 'passingEle12Leg',           'fitVars': ['bool tag_passingEle23Ele12Leg1','bool passingEle12Leg']},
-            'Ele12LegDZ':         {'condition': ['tag_passingEle23Ele12Leg1 && passingEle12Leg'], 'variable': 'passingEle12LegDZ',         'fitVars': ['bool tag_passingEle23Ele12Leg1','bool passingEle12Leg','bool passingEle12LegDZ']},
+            'Ele27WPTight':       {'threshold': 25, 'condition': [],                                               'variable': 'passingEle27WPTight',       'fitVars': ['bool passingEle27WPTight']},
+            'Ele27Eta2p1WPTight': {'threshold': 25, 'condition': [],                                               'variable': 'passingEle27Eta2p1WPTight', 'fitVars': ['bool passingEle27Eta2p1WPTight']},
+            'Ele23Leg':           {'threshold': 25, 'condition': [],                                               'variable': 'passingEle23Leg',           'fitVars': ['bool passingEle23Leg']},
+            'Ele12Leg':           {'threshold': 10, 'condition': ['tag_passingEle23Ele12Leg1'],                    'variable': 'passingEle12Leg',           'fitVars': ['bool tag_passingEle23Ele12Leg1','bool passingEle12Leg']},
+            'Ele12LegDZ':         {'threshold': 10, 'condition': ['tag_passingEle23Ele12Leg1 && passingEle12Leg'], 'variable': 'passingEle12LegDZ',         'fitVars': ['bool tag_passingEle23Ele12Leg1','bool passingEle12Leg','bool passingEle12LegDZ']},
         },
         'muon': {
-            'IsoMu24':                  {'condition': [],                                          'variable': 'passingIsoMu24',                   'fitVars': ['bool passingIsoMu24']},
-            'IsoTkMu24':                {'condition': [],                                          'variable': 'passingIsoTkMu24',                 'fitVars': ['bool passingIsoTkMu24']},
-            'IsoMu24ORIsoTkMu24':       {'condition': [],                                          'variable': 'passingIsoMu24ORIsoTkMu24',        'fitVars': ['bool passingIsoMu24ORIsoTkMu24']},
-            'Mu50':                     {'condition': [],                                          'variable': 'passingMu50',                      'fitVars': ['bool passingMu50']},
-            'IsoMu24ORIsoTkMu24ORMu50': {'condition': [],                                          'variable': 'passingIsoMu24ORIsoTkMu24ORMu50',  'fitVars': ['bool passingIsoMu24ORIsoTkMu24ORMu50']},
-            'Mu17Leg':                  {'condition': [],                                          'variable': 'passingMu17Leg',                   'fitVars': ['bool passingMu17Leg']},
-            'Mu8Leg':                   {'condition': ['tag_passingMu17'],                         'variable': 'passingMu8Leg',                    'fitVars': ['bool tag_passingMu17','bool passingMu8Leg']},
-            'TkMu8Leg':                 {'condition': ['tag_passingMu17'],                         'variable': 'passingTkMu8Leg',                  'fitVars': ['bool tag_passingMu17','bool passingTkMu8Leg']},
-            'Mu8ORTkMu8Leg':            {'condition': ['tag_passingMu17'],                         'variable': 'passingMu8ORTkMu8Leg',             'fitVars': ['bool tag_passingMu17','bool passingMu8ORTkMu8Leg']},
-            'Mu8LegDZ':                 {'condition': ['tag_passingMu17 && passingMu8Leg'],        'variable': 'passingMu8LegDZ',                  'fitVars': ['bool tag_passingMu17','bool passingMu8Leg','bool passingMu8LegDZ']},
-            'TkMu8LegDZ':               {'condition': ['tag_passingMu17 && passingTkMu8Leg'],      'variable': 'passingTkMu8LegDZ',                'fitVars': ['bool tag_passingMu17','bool passingTkMu8Leg','bool passingTkMu8LegDZ']},
-            'Mu8ORTkMu8LegDZ':          {'condition': ['tag_passingMu17 && passingMu8ORTkMu8Leg'], 'variable': 'passingMu8ORTkMu8LegDZ',           'fitVars': ['bool tag_passingMu17','bool passingMu8ORTkMu8Leg','bool passingMu8ORTkMu8LegDZ']},
+            'IsoMu24':                  {'threshold': 25, 'condition': [],                                          'variable': 'passingIsoMu24',                   'fitVars': ['bool passingIsoMu24']},
+            'IsoTkMu24':                {'threshold': 25, 'condition': [],                                          'variable': 'passingIsoTkMu24',                 'fitVars': ['bool passingIsoTkMu24']},
+            'IsoMu24ORIsoTkMu24':       {'threshold': 25, 'condition': [],                                          'variable': 'passingIsoMu24ORIsoTkMu24',        'fitVars': ['bool passingIsoMu24ORIsoTkMu24']},
+            'Mu50':                     {'threshold': 50, 'condition': [],                                          'variable': 'passingMu50',                      'fitVars': ['bool passingMu50']},
+            'IsoMu24ORIsoTkMu24ORMu50': {'threshold': 25, 'condition': [],                                          'variable': 'passingIsoMu24ORIsoTkMu24ORMu50',  'fitVars': ['bool passingIsoMu24ORIsoTkMu24ORMu50']},
+            'Mu17Leg':                  {'threshold': 15, 'condition': [],                                          'variable': 'passingMu17Leg',                   'fitVars': ['bool passingMu17Leg']},
+            'Mu8Leg':                   {'threshold': 10, 'condition': ['tag_passingMu17'],                         'variable': 'passingMu8Leg',                    'fitVars': ['bool tag_passingMu17','bool passingMu8Leg']},
+            'TkMu8Leg':                 {'threshold': 10, 'condition': ['tag_passingMu17'],                         'variable': 'passingTkMu8Leg',                  'fitVars': ['bool tag_passingMu17','bool passingTkMu8Leg']},
+            'Mu8ORTkMu8Leg':            {'threshold': 10, 'condition': ['tag_passingMu17'],                         'variable': 'passingMu8ORTkMu8Leg',             'fitVars': ['bool tag_passingMu17','bool passingMu8ORTkMu8Leg']},
+            'Mu8LegDZ':                 {'threshold': 10, 'condition': ['tag_passingMu17 && passingMu8Leg'],        'variable': 'passingMu8LegDZ',                  'fitVars': ['bool tag_passingMu17','bool passingMu8Leg','bool passingMu8LegDZ']},
+            'TkMu8LegDZ':               {'threshold': 10, 'condition': ['tag_passingMu17 && passingTkMu8Leg'],      'variable': 'passingTkMu8LegDZ',                'fitVars': ['bool tag_passingMu17','bool passingTkMu8Leg','bool passingTkMu8LegDZ']},
+            'Mu8ORTkMu8LegDZ':          {'threshold': 10, 'condition': ['tag_passingMu17 && passingMu8ORTkMu8Leg'], 'variable': 'passingMu8ORTkMu8LegDZ',           'fitVars': ['bool tag_passingMu17','bool passingMu8ORTkMu8Leg','bool passingMu8ORTkMu8LegDZ']},
         },
     }
 
@@ -349,7 +338,31 @@ def runfit(args):
         args.fitsToRun = idArgs[args.object].keys()+trigArgs[args.object].keys()
 
     for trigArg,vals in trigArgs[args.object].iteritems():
+        # binning for the efficiencies
+        ptBinMap = {
+            'electron' : getBinning('electron','pt'),
+            'muon'     : getBinning('muon','pt'),
+            'electronTrig' : getBinning('electron','pt',trig=True,threshold=vals['threshold']),
+            'muonTrig'     : getBinning('muon','pt',trig=True,threshold=vals['threshold']),
+        }
+
+        binning_trig = {}
+        for pb in range(len(ptBinMap[args.object+'Trig'][:-1])):
+            ptlow = ptBinMap[args.object+'Trig'][pb]
+            pthigh = ptBinMap[args.object+'Trig'][pb+1]
+            ptname = 'pt{0}to{1}'.format(ptlow,pthigh)
+            ptcut_trig = '{0}>={1} && {0}<{2}'.format(ptVar[args.object+'Trig'],ptlow,pthigh)
+            for eb in range(len(etaBinMap[args.object+'Trig'][:-1])):
+                etalow = etaBinMap[args.object+'Trig'][eb]
+                etahigh = etaBinMap[args.object+'Trig'][eb+1]
+                etaname = 'eta{0}to{1}'.format(etalow,etahigh)
+                etacut_trig = '{0}>={1} && {0}<{2}'.format(etaVar[args.object+'Trig'],etalow,etahigh)
+                binning_trig['{0}_{1}'.format(ptname,etaname)] = [ptcut_trig,etacut_trig]
+
+        commonVars_trig = ['float {0}'.format(ptVar[args.object+'Trig']), 'float {0}'.format(etaVar[args.object+'Trig'])]
+
         if trigArg in args.fitsToRun: fit(trigArg, vals['condition'], vals['variable'], binning_trig, commonVars_trig+vals['fitVars'], tmc=tmc_trig, tmcAlt=tmcAlt_trig, tdata=tdata_trig, obj=args.object)
+
     for idArg,vals in idArgs[args.object].iteritems():
         if idArg in args.fitsToRun: fit(idArg, vals['condition'], vals['variable'], binning, commonVars+vals['fitVars'], tmc=tmc, tmcAlt=tmcAlt, tdata=tdata, obj=args.object)
 
