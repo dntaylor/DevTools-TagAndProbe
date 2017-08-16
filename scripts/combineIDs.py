@@ -25,6 +25,7 @@ def main(argv=None):
 
     combineScaleFactors('muon')
     combineScaleFactors('electron')
+    combineScaleFactors('photon')
 
 
 if __name__ == "__main__":

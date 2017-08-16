@@ -108,7 +108,9 @@ def plot(args):
         else:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
     else:
-        if 'Iso' in args.idName:
+        if args.object=='photon':
+            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, -1.0 if 'Fail' in args.idName else 1., True, False, var) # args: pt, eta, mva, pre, el-veto
+        elif 'Iso' in args.idName:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, True if 'Hpp' in args.idName else 0., var)
         else:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
@@ -392,7 +394,7 @@ def plot(args):
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='TagAndProbe Plotter')
 
-    parser.add_argument('object', type=str, choices=['electron','muon'], help='Physics object')
+    parser.add_argument('object', type=str, choices=['electron','muon','photon'], help='Physics object')
     parser.add_argument('output', type=str, help='Directory for output')
     parser.add_argument('idName', type=str, help='Name of ID')
     parser.add_argument('idNameNice', type=str, help='Name of ID for printing')

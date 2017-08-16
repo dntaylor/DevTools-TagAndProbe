@@ -29,8 +29,9 @@ class PassFailSimulFitter :
 
     def __init__(self, name, fitVariable) :
         self.workspace = ROOT.RooWorkspace(name)
-        self._wsimport(fitVariable)
-        self._fitVar = self.workspace.var(fitVariable.GetName())
+        self._treeFitVarName = fitVariable.GetName()
+        self._wsimport(fitVariable,ROOT.RooFit.RenameVariable(fitVariable.GetName(),'mass'))
+        self._fitVar = self.workspace.var('mass')
         self.workspace.factory("decision[Passed,Failed]")
 
     def setPdf(self, pdfDefinition) :
@@ -39,11 +40,6 @@ class PassFailSimulFitter :
         self.workspace.saveSnapshot('setPdfParameters', self.workspace.components())
 
     def setData(self, name, passed, failed, separate = False) :
-        # TODO: check passing failing hists for consistency
-        nPass = passed.Integral()
-        nFail = failed.Integral()
-        if nPass == 0 or nFail == 0 :
-            print 'WARNING: No passing or failing data!'
         if separate :
             dataPass = ROOT.RooDataHist(name+'Pass', name+' Passing bin', ROOT.RooArgList(self._fitVar), passed)
             self._wsimport(dataPass)
@@ -67,27 +63,18 @@ class PassFailSimulFitter :
         hfail = hpass.Clone(dataName+'_failed_probes')
         if type(allProbeCondition) is list :
             allProbeCondition = '&&'.join(allProbeCondition)
-        if weightVariable=='totWeight': # need to protect against inf for PU bin 37
-            #tree.Draw('mass >> {0}_passed_probes'.format(dataName), '(truePU==37 ? 0 : {0})*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
-            #tree.Draw('mass >> {0}_failed_probes'.format(dataName), '(truePU==37 ? 0 : {0})*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
-            tree.Draw('mass >> {0}_passed_probes'.format(dataName), '({0})*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
-            tree.Draw('mass >> {0}_failed_probes'.format(dataName), '({0})*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+        if weightVariable=='totWeight':
+            tree.Draw('{0} >> {1}_passed_probes'.format(self._treeFitVarName,dataName), '({0})*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+            tree.Draw('{0} >> {1}_failed_probes'.format(self._treeFitVarName,dataName), '({0})*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
         else:
-            tree.Draw('mass >> {0}_passed_probes'.format(dataName), '{0}*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
-            tree.Draw('mass >> {0}_failed_probes'.format(dataName), '{0}*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+            tree.Draw('{0} >> {1}_passed_probes'.format(self._treeFitVarName,dataName), '{0}*({1})*({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
+            tree.Draw('{0} >> {1}_failed_probes'.format(self._treeFitVarName,dataName), '{0}*({1})*!({2})'.format(weightVariable, allProbeCondition, passingProbeCondition), 'goff')
 
-        #tree.Draw('>> %s_entrylist_passed' % dataName, '(%s)*(%s)' % (allProbeCondition, passingProbeCondition), 'entrylist')
-        #tree.Draw('>> %s_entrylist_failed' % dataName, '(%s)*!(%s)' % (allProbeCondition, passingProbeCondition), 'entrylist')
-        #skimpass = ROOT.gDirectory.Get('%s_entrylist_passed' % dataName)
-        #skimfail = ROOT.gDirectory.Get('%s_entrylist_failed' % dataName)
-        #for p in xrange(skimpass.GetN()):
-        #    tree.GetEntry(skimpass.Next())
-        #    if hasattr(tree,'totWeight') and abs(tree.totWeight)>99999: continue # protect against inf
-        #    hpass.Fill(tree.mass,getattr(tree,weightVariable) if hasattr(tree,weightVariable) else 1.)
-        #for f in xrange(skimfail.GetN()):
-        #    tree.GetEntry(skimfail.Next())
-        #    if hasattr(tree,'totWeight') and abs(tree.totWeight)>99999: continue # protect against inf
-        #    hfail.Fill(tree.mass,getattr(tree,weightVariable) if hasattr(tree,weightVariable) else 1.)
+        nPass = hpass.Integral()
+        nFail = hfail.Integral()
+        if nPass == 0 or nFail == 0 :
+            print 'WARNING: No passing or failing data! pass: {0}; fail: {1}'.format(nPass,nFail)
+            print '{0}*({1})*({2})'.format(weightVariable,allProbeCondition,passingProbeCondition)
 
         self.setData(dataName, hpass, hfail, separatePassFail)
 
@@ -104,9 +91,8 @@ class PassFailSimulFitter :
         nPass = data.sumEntries('decision==decision::Passed')
         nFail = data.sumEntries('decision==decision::Failed')
         # Crude estimate of passing signal purity
-        # TODO: relies on fitVar being Z mass
-        nPassCenter = data.sumEntries('decision==decision::Passed && mass>80 && mass<100')
-        nPassSides   = data.sumEntries('decision==decision::Passed && mass<80 && mass>100')
+        nPassCenter = data.sumEntries('decision==decision::Passed && {0}>80 && {0}<100'.format(self._treeFitVarName))
+        nPassSides   = data.sumEntries('decision==decision::Passed && {0}<80 && {0}>100'.format(self._treeFitVarName))
         signalFractionPassing = (nPassCenter-nPassSides/2)/nPass if nPass else 0.
 
         initialEff = w.var('efficiency').getVal()
