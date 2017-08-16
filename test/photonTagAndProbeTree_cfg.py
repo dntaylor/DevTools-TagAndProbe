@@ -98,15 +98,18 @@ trigger_filters = OrderedDict()
 
 
 # HLT_Diphoton30_18_R9Id_OR_IsoCaloId_AND_HE_R9Id_Mass90_v*
-# 30: hltEG30LRId85ORIso60CaloId15b35eANDHE12R9Id50b80eLegCombLastFilter
+# 30: hltEG30LRId85ORIso60CaloId15b35eANDHE12R9Id50b80eLegCombLastFilter -> doesnt work
+#   or: hltEG30LIso60CaloId15b35eHE12R9Id50b80eEcalIsoLastFilter or hltEG30LR9Id85b90eHE12R9Id50b80eR9IdLastFilter
 # 18: hltEG18R9Id85b90eHE12R9Id50b80eR9UnseededLastFilter or  hltEG18Iso60CaloId15b35eHE12R9Id50b80eTrackIsoUnseededLastFilter
-# 90: hltDiEG18R9Id85b90eORIso60CaloId15b35eANDHE12R9Id50b80eMass90CombMassLastFilter
+# 90: hltDiEG18R9Id85b90eORIso60CaloId15b35eANDHE12R9Id50b80eMass90CombMassLastFilter -> doesnt work
 
 trigger_filters['probeTriggersPho30Leg'] = {
     'filterNames': {
-        'v4.2': ["hltEG30LRId85ORIso60CaloId15b35eANDHE12R9Id50b80eLegCombLastFilter"],
+        #'v4.2': ["hltEG30LRId85ORIso60CaloId15b35eANDHE12R9Id50b80eLegCombLastFilter"],
+        'v4.2': ["hltEG30LIso60CaloId15b35eHE12R9Id50b80eEcalIsoLastFilter","hltEG30LR9Id85b90eHE12R9Id50b80eR9IdLastFilter"],
     },
-    'isAND': True,
+    #'isAND': True,
+    'isAND': False,
     #'inputs': 'goodPhotons',
     'inputs': 'goodElectrons',
 }
@@ -118,14 +121,14 @@ trigger_filters['probeTriggersPho18Leg'] = {
     #'inputs': 'goodPhotons',
     'inputs': 'goodElectrons',
 }
-trigger_filters['probeTriggersPho18LegM90'] = {
-    'filterNames': {
-        'v4.2': ["hltDiEG18R9Id85b90eORIso60CaloId15b35eANDHE12R9Id50b80eMass90CombMassLastFilter"],
-    },
-    'isAND': True,
-    #'inputs': 'goodPhotons',
-    'inputs': 'goodElectrons',
-}
+#trigger_filters['probeTriggersPho18LegM90'] = {
+#    'filterNames': {
+#        'v4.2': ["hltDiEG18R9Id85b90eORIso60CaloId15b35eANDHE12R9Id50b80eMass90CombMassLastFilter"],
+#    },
+#    'isAND': True,
+#    #'inputs': 'goodPhotons',
+#    'inputs': 'goodElectrons',
+#}
 
 # HLT_DoublePhoton60_v*
 # 60: hltEG60HEFilter
