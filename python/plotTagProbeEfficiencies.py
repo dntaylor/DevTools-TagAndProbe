@@ -78,6 +78,12 @@ def plot(args):
             'TkMu8LegDZ':               10,
             'Mu8ORTkMu8LegDZ':          10,
         },
+        'photon': {
+            'Pho18Leg': 18,
+            'Pho30Leg': 30,
+            'Pho60Leg': 60,
+            'Pho175':   175,
+        },
     }
 
     if args.trig:
@@ -86,6 +92,7 @@ def plot(args):
         ptbins = getBinning(args.object,'pt',trig=args.trig)
     etabins = getBinning(args.object,'eta',trig=args.trig)
     colors = [
+        ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10,
         ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10,
         ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10,
     ]

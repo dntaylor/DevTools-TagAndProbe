@@ -42,8 +42,8 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
 
     ROOT.gDirectory.mkdir(name).cd()
     fitter = PassFailSimulFitter(name, fitVariable)
-    fitter.addDataFromTree(tmc, 'mcData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True, weightVariable='genWeight*pileupWeight*triggerEfficiency')
-    fitter.addDataFromTree(tmcAlt, 'mcAltData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True, weightVariable='genWeight*pileupWeight*triggerEfficiency')
+    fitter.addDataFromTree(tmc, 'mcData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True, weightVariable='genWeight*pileupWeight*triggerEfficiency*e_mediumScale')
+    fitter.addDataFromTree(tmcAlt, 'mcAltData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True, weightVariable='genWeight*pileupWeight*triggerEfficiency*e_mediumScale')
     nMCPass = fitter.workspace.data('mcDataPass').sumEntries()
     nMCFail = fitter.workspace.data('mcDataFail').sumEntries()
     if nMCPass!=nMCPass or nMCFail!=nMCFail:

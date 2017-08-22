@@ -31,8 +31,9 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    combineScaleFactors('muon')
-    combineScaleFactors('electron')
+    #combineScaleFactors('muon')
+    #combineScaleFactors('electron')
+    combineScaleFactors('photon')
 
 
 if __name__ == "__main__":

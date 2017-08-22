@@ -198,6 +198,8 @@ def runfit(args):
         'electron' : 'GsfElectronToEleID/fitter_tree',
         'electronTrig' : 'GsfElectronToTrigger/fitter_tree',
         'muon'     : 'muonEffs/fitter_tree',
+        'photon' : 'GsfElectronToPhoID/fitter_tree',
+        'photonTrig' : 'GsfElectronToTrigger/fitter_tree',
     }
 
     fmc = ROOT.TFile.Open(args.mcFileName)
@@ -208,6 +210,11 @@ def runfit(args):
 
     fdata = ROOT.TFile.Open(args.dataFileName)
     tdata = fdata.Get(treeNameMap[args.object])
+
+    if args.object=='photon':
+        tmc_trig = fmc.Get(treeNameMap[args.object+'Trig'])
+        tmcAlt_trig = fmcAlt.Get(treeNameMap[args.object+'Trig'])
+        tdata_trig = fdata.Get(treeNameMap[args.object+'Trig'])
 
     if args.object=='electron':
         tmc_trig = fmc.Get(treeNameMap[args.object+'Trig'])
@@ -223,26 +230,34 @@ def runfit(args):
     # binning for the efficiencies
     ptBinMap = {
         'electron' : getBinning('electron','pt'),
+        'photon' : getBinning('photon','pt'),
         'muon'     : getBinning('muon','pt'),
         'electronTrig' : getBinning('electron','pt',trig=True),
+        'photonTrig' : getBinning('photon','pt',trig=True),
         'muonTrig'     : getBinning('muon','pt',trig=True),
     }
 
     etaBinMap = {
         'electron' : getBinning('electron','eta'),
+        'photon' : getBinning('photon','eta'),
         'muon'     : getBinning('muon','eta'),
         'electronTrig' : getBinning('electron','eta',trig=True),
+        'photonTrig' : getBinning('photon','eta',trig=True),
         'muonTrig'     : getBinning('muon','eta',trig=True),
     }
 
     ptVar = {
         'electron'     : 'probe_Ele_pt',
         'electronTrig' : 'probe_Ele_pt',
+        'photon'     : 'probe_Pho_pt',
+        'photonTrig' : 'probe_Ele_pt',
         'muon'         : 'probe_pt',
         'muonTrig'     : 'probe_pt',
     }
 
     etaVar = {
+        'photon'     : 'probe_Pho_eta',
+        'photonTrig' : 'probe_sc_eta',
         'electron'     : 'probe_Ele_eta',
         'electronTrig' : 'probe_sc_eta',
         'muon'         : 'probe_eta',
@@ -308,6 +323,7 @@ def runfit(args):
             'TightIsoFromTightID':       {'conditions': ['passingTight'],       'variable': 'probe_isoR04<0.15',  'fitVars': ['bool passingTight','float probe_isoR04']},
 
         },
+        'photon': {},
     }
 
     trigArgs = {
@@ -317,6 +333,12 @@ def runfit(args):
             'Ele23Leg':           {'threshold': 25, 'condition': [],                                               'variable': 'passingEle23Leg',           'fitVars': ['bool passingEle23Leg']},
             'Ele12Leg':           {'threshold': 10, 'condition': ['tag_passingEle23Ele12Leg1'],                    'variable': 'passingEle12Leg',           'fitVars': ['bool tag_passingEle23Ele12Leg1','bool passingEle12Leg']},
             'Ele12LegDZ':         {'threshold': 10, 'condition': ['tag_passingEle23Ele12Leg1 && passingEle12Leg'], 'variable': 'passingEle12LegDZ',         'fitVars': ['bool tag_passingEle23Ele12Leg1','bool passingEle12Leg','bool passingEle12LegDZ']},
+        },
+        'photon': {
+            'Pho30Leg':       {'threshold': 30, 'condition': [],                                               'variable': 'passingPho30Leg',       'fitVars': ['bool passingPho30Leg']},
+            'Pho18Leg':       {'threshold': 18, 'condition': [],                                               'variable': 'passingPho18Leg',       'fitVars': ['bool passingPho18Leg']},
+            'Pho60Leg':       {'threshold': 60, 'condition': [],                                               'variable': 'passingPho60Leg',       'fitVars': ['bool passingPho60Leg']},
+            'Pho175':         {'threshold': 175,'condition': [],                                               'variable': 'passingPho175',         'fitVars': ['bool passingPho175']},
         },
         'muon': {
             'IsoMu24':                  {'threshold': 25, 'condition': [],                                          'variable': 'passingIsoMu24',                   'fitVars': ['bool passingIsoMu24']},
@@ -341,8 +363,10 @@ def runfit(args):
         # binning for the efficiencies
         ptBinMap = {
             'electron' : getBinning('electron','pt'),
+            'photon' : getBinning('photon','pt'),
             'muon'     : getBinning('muon','pt'),
             'electronTrig' : getBinning('electron','pt',trig=True,threshold=vals['threshold']),
+            'photonTrig' : getBinning('photon','pt',trig=True,threshold=vals['threshold']),
             'muonTrig'     : getBinning('muon','pt',trig=True,threshold=vals['threshold']),
         }
 
@@ -371,7 +395,7 @@ def runfit(args):
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='TagAndProbe Fitter')
 
-    parser.add_argument('object', type=str, choices=['electron','muon'], help='Physics object')
+    parser.add_argument('object', type=str, choices=['electron','muon','photon'], help='Physics object')
     parser.add_argument('--mcFileName', '-mc', type=str, default='TnPTree_mc.root', help='Filename for MC TagAndProbe Tree')
     parser.add_argument('--mcLOFileName', '-mcLO', type=str, default='TnPTree_mcLO.root', help='Filename for MC LO TagAndProbe Tree')
     parser.add_argument('--dataFileName', '-data', type=str, default='TnPTree_data.root', help='Filename for Data TagAndProbe Tree')
