@@ -119,6 +119,8 @@ def plot(args):
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, -1.0 if 'Fail' in args.idName else 1., True, False, var) # args: pt, eta, mva, pre, el-veto
         elif 'Iso' in args.idName:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, True if 'Hpp' in args.idName else 0., var)
+        elif 'SameSign' in args.idName:
+            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, "ee", 1, 1, var)
         else:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
     
