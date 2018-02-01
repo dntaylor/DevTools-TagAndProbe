@@ -237,11 +237,11 @@ def runfit(args):
     fout.mkdir(directory).cd()
 
     idArgs = {
-        'Preselection' : {'condition': ['g_passElectronVeto<0.5'], 'variable': 'g_passPreselectionNoElectronVeto>0.5',                           'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto']},
-        'MVA0p0Pre'    : {'condition': ['g_passElectronVeto<0.5'], 'variable': 'g_mvaNonTrigValues>0.0 && g_passPreselectionNoElectronVeto>0.5', 'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto']},
-        'MVA0p0PreFail': {'condition': ['g_passElectronVeto<0.5'], 'variable': 'g_mvaNonTrigValues<0.0 && g_passPreselectionNoElectronVeto>0.5', 'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto']},
-        'MVA0p0'       : {'condition': ['g_passElectronVeto<0.5'], 'variable': 'g_mvaNonTrigValues>0.0',                                         'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto']},
-        'MVA0p0Fail'   : {'condition': ['g_passElectronVeto<0.5'], 'variable': 'g_mvaNonTrigValues<0.0',                                         'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto']},
+        'Preselection' : {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_passPreselectionNoElectronVeto>0.5',                           'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
+        'MVA0p0Pre'    : {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_mvaNonTrigValues>0.0 && g_passPreselectionNoElectronVeto>0.5', 'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
+        #'MVA0p0PreFail': {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_mvaNonTrigValues<0.0 && g_passPreselectionNoElectronVeto>0.5', 'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
+        'MVA0p0'       : {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_mvaNonTrigValues>0.0',                                         'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
+        #'MVA0p0Fail'   : {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_mvaNonTrigValues<0.0',                                         'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
     }
 
     for idArg,vals in idArgs.iteritems():

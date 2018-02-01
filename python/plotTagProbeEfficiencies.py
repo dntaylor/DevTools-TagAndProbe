@@ -116,7 +116,7 @@ def plot(args):
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
     else:
         if args.object=='photon':
-            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, -1.0 if 'Fail' in args.idName else 1., True, False, var) # args: pt, eta, mva, pre, el-veto
+            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, -1.0 if 'Fail' in args.idName else 1., True, False, 0., var) # args: pt, eta, mva, pre, el-veto, probe eta
         elif 'Iso' in args.idName:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, True if 'Hpp' in args.idName else 0., var)
         elif 'SameSign' in args.idName:
