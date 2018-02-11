@@ -78,6 +78,12 @@ def plot(args):
             'TkMu8LegDZ':               10,
             'Mu8ORTkMu8LegDZ':          10,
         },
+        'photon': {
+            'Pho18Leg': 18,
+            'Pho30Leg': 30,
+            'Pho60Leg': 60,
+            'Pho175':   175,
+        },
     }
 
     if args.trig:
@@ -86,6 +92,7 @@ def plot(args):
         ptbins = getBinning(args.object,'pt',trig=args.trig)
     etabins = getBinning(args.object,'eta',trig=args.trig)
     colors = [
+        ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10,
         ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10,
         ROOT.kRed, ROOT.kGreen, ROOT.kBlue, ROOT.kBlack, ROOT.kMagenta, ROOT.kCyan, ROOT.kOrange, ROOT.kGreen+2, ROOT.kRed-3, ROOT.kCyan+1, ROOT.kMagenta-3, ROOT.kViolet-1, ROOT.kSpring+10,
     ]
@@ -109,9 +116,11 @@ def plot(args):
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
     else:
         if args.object=='photon':
-            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, -1.0 if 'Fail' in args.idName else 1., True, False, var) # args: pt, eta, mva, pre, el-veto
+            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, -1.0 if 'Fail' in args.idName else 1., True, False, 0., var) # args: pt, eta, mva, pre, el-veto, probe eta
         elif 'Iso' in args.idName:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, True if 'Hpp' in args.idName else 0., var)
+        elif 'SameSign' in args.idName:
+            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, "ee", 1, 1, var)
         else:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
     

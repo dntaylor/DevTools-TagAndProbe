@@ -33,8 +33,8 @@ def statusInfo(fitResults):
     fitStatus=':'.join(['% d' % fitResults.statusCodeHistory(i) for i in range(fitResults.numStatusHistory())]),
     return fitStatus
 
-def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None, tdata=None, obj='photon'):
-    fitVariable = ROOT.RooRealVar('eg_mass', 'TP Pair Mass', 60, 120, 'GeV')
+def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None, tdata=None, obj='electron'):
+    fitVariable = ROOT.RooRealVar('z_mass', 'TP Pair Mass', 60, 120, 'GeV')
     fitVariable.setBins(60)
 
     #mcTruthCondition = ['mcTrue']
@@ -42,8 +42,8 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
 
     ROOT.gDirectory.mkdir(name).cd()
     fitter = PassFailSimulFitter(name, fitVariable)
-    fitter.addDataFromTree(tmc, 'mcData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True, weightVariable='genWeight*pileupWeight*triggerEfficiency*e_mediumScale')
-    fitter.addDataFromTree(tmcAlt, 'mcAltData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True, weightVariable='genWeight*pileupWeight*triggerEfficiency*e_mediumScale')
+    fitter.addDataFromTree(tmc, 'mcData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True, weightVariable='genWeight*pileupWeight*triggerEfficiency*z1_looseScale*z2_looseScale')
+    fitter.addDataFromTree(tmcAlt, 'mcAltData', allProbeCondition+mcTruthCondition, passingProbeCondition, separatePassFail = True, weightVariable='genWeight*pileupWeight*triggerEfficiency*z1_looseScale*z2_looseScale')
     nMCPass = fitter.workspace.data('mcDataPass').sumEntries()
     nMCFail = fitter.workspace.data('mcDataFail').sumEntries()
     if nMCPass!=nMCPass or nMCFail!=nMCFail:
@@ -113,8 +113,8 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
         print '  Variation {:>15s} : {:.4f}, edm={:f}, status={:s}'.format(varName, value, fitResult.edm(), statusInfo(fitResult))
         if 'STAT' not in varName and 'EFF' not in varName and fitResult.statusCodeHistory(0) < 0 :
             cBad = fitter.drawFitCanvas(fitResult)
-            python_mkdir('fits_{0}/badFits/{1}'.format(obj,name))
-            cBad.Print('fits_{0}/badFits/{1}/badFit_{1}_{2}.png'.format(obj,name, varName))
+            python_mkdir('fits_charge/badFits/{1}'.format(obj,name))
+            cBad.Print('fits_charge/badFits/{1}/badFit_{1}_{2}.png'.format(obj,name, varName))
         #cAll = fitter.drawFitCanvas(fitResult)
         #python_mkdir('fits_{0}/allFits/{1}'.format(obj,name))
         #cAll.Print('fits_{0}/allFits/{1}/{1}_{2}.png'.format(obj,name, varName))
@@ -123,7 +123,7 @@ def fitBin(name, allProbeCondition, passingProbeCondition, tmc=None, tmcAlt=None
     print
     ROOT.gDirectory.cd('..')
 
-def fitBinAlt(name, allProbeCondition, passingProbeCondition, tdata=None, obj='photon'):
+def fitBinAlt(name, allProbeCondition, passingProbeCondition, tdata=None, obj='electron'):
     fitVariable = ROOT.RooRealVar('eg_mass', 'TP Pair Mass', 60, 120, 'GeV')
     fitVariable.setBins(60)
 
@@ -197,7 +197,7 @@ def runfit(args):
     ROOT.Math.MinimizerOptions.SetDefaultTolerance(1.e-2) # default is 1.e-2
 
     # trees for mc, mc lo (for systematics), and data
-    treeName = 'EGTree'
+    treeName = 'ChargeTree'
 
     fmc = ROOT.TFile.Open(args.mcFileName)
     tmc = fmc.Get(treeName)
@@ -209,11 +209,11 @@ def runfit(args):
     tdata = fdata.Get(treeName)
 
     # binning for the efficiencies
-    ptBin = getBinning('photon','pt')
-    etaBin = getBinning('photon','eta')
+    ptBin = getBinning('electron','pt')
+    etaBin = getBinning('electron','eta')
 
-    ptVar = 'g_pt'
-    etaVar = 'g_eta'
+    ptVar = 'z2_pt'
+    etaVar = 'z2_eta'
 
     binning = {}
     for pb in range(len(ptBin[:-1])):
@@ -233,15 +233,11 @@ def runfit(args):
     # run the fits
     fname = args.outputFileName
     fout = ROOT.TFile(fname, 'recreate')
-    directory = 'PhotonFits'
+    directory = 'ChargeFits'
     fout.mkdir(directory).cd()
 
     idArgs = {
-        'Preselection' : {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_passPreselectionNoElectronVeto>0.5',                           'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
-        'MVA0p0Pre'    : {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_mvaNonTrigValues>0.0 && g_passPreselectionNoElectronVeto>0.5', 'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
-        #'MVA0p0PreFail': {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_mvaNonTrigValues<0.0 && g_passPreselectionNoElectronVeto>0.5', 'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
-        'MVA0p0'       : {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_mvaNonTrigValues>0.0',                                         'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
-        #'MVA0p0Fail'   : {'condition': ['g_passElectronVeto<0.5 && fabs(e_eta)<2.17'], 'variable': 'g_mvaNonTrigValues<0.0',                                         'fitVars': ['float g_mvaNonTrigValues', 'bool g_passPreselectionNoElectronVeto','bool g_passElectronVeto', 'float e_eta']},
+        'SameSign' : {'condition': ['channel=="ee"'], 'variable': 'z1_charge==z2_charge', 'fitVars': ['std::string channel','int z1_charge','int z2_charge']},
     }
 
     for idArg,vals in idArgs.iteritems():
@@ -255,7 +251,7 @@ def parse_command_line(argv):
     parser.add_argument('--mcFileName', '-mc', type=str, default='TnPTree_mc.root', help='Filename for MC TagAndProbe Tree')
     parser.add_argument('--mcLOFileName', '-mcLO', type=str, default='TnPTree_mcLO.root', help='Filename for MC LO TagAndProbe Tree')
     parser.add_argument('--dataFileName', '-data', type=str, default='TnPTree_data.root', help='Filename for Data TagAndProbe Tree')
-    parser.add_argument('--outputFileName', type=str, default='fits_photon.root', help='Filename for output')
+    parser.add_argument('--outputFileName', type=str, default='fits_charge.root', help='Filename for output')
 
     return parser.parse_args(argv)
 

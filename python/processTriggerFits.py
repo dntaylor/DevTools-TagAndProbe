@@ -78,16 +78,19 @@ def save1D(eff,var,savename,outdir):
 def saveEff(obj,trigname,outfile,outdir):
     effdir = {
         'electron' : 'GsfElectronToTrigger',
+        'photon' : 'GsfElectronToTrigger',
         'muon'     : 'muonEffs',
     }
     
     ptvar = {
         'electron' : 'probe_Ele_pt',
+        'photon' : 'probe_Ele_pt',
         'muon'     : 'probe_pt',
     }
     
     etavar = {
         'electron' : 'probe_Ele_eta',
+        'photon' : 'probe_Ele_eta',
         'muon'     : 'probe_eta',
     }
     
@@ -149,6 +152,12 @@ def doAllEfficiencies(obj):
             'passingTkMu8LegDZ',
             'passingMu50',
         ],
+        'photon': [
+            'passingPho18Leg',
+            'passingPho30Leg',
+            'passingPho60Leg',
+            'passingPho175',
+        ],
     }
 
     for eff in effList[obj]:
@@ -161,8 +170,9 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    doAllEfficiencies('muon')
+    #doAllEfficiencies('muon')
     #doAllEfficiencies('electron')
+    doAllEfficiencies('photon')
 
 
 if __name__ == "__main__":
