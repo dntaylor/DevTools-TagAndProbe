@@ -1,6 +1,6 @@
 baseDir=/hdfs/store/user/dntaylor/tagAndProbe/muon
 python DevTools/TagAndProbe/python/fitter.py muon -mc $baseDir/dy_nlo.root -mcLO $baseDir/dy_lo.root -data $baseDir/data.root
-#python DevTools/TagAndProbe/python/dumpTagProbeTreeHTML.py --data fits_muon.root -i muonFits -o fits_muon/
+#python DevTools/TagAndProbe/python/dumpTagProbeTreeHTML.py fits_muon.root -i muonFits -o fits_muon/
 #python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon HppLooseID "Hpp Loose ID"
 #python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon HppLooseIsoFromLooseID "Hpp Loose Iso from Loose ID"
 #python DevTools/TagAndProbe/python/plotTagProbeEfficiencies.py muon HppMediumID "Hpp Medium ID"

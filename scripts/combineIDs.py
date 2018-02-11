@@ -13,10 +13,18 @@ def combineScaleFactors(obj):
         idname = os.path.basename(fname).split('_')[0]
         idfile = ROOT.TFile(fname)
         sf = idfile.Get('scalefactor').Clone()
+        em = idfile.Get('effMC').Clone()
+        ed = idfile.Get('effMC').Clone()
         outfile.cd()
         sf.SetName(idname)
         sf.SetTitle(idname)
         sf.Write()
+        em.SetName(idname+'effMC')
+        em.SetTitle(idname+'effMC')
+        em.Write()
+        ed.SetName(idname+'effData')
+        ed.SetTitle(idname+'effData')
+        ed.Write()
 
 
 def main(argv=None):
