@@ -209,11 +209,14 @@ def runfit(args):
     tdata = fdata.Get(treeName)
 
     # binning for the efficiencies
-    ptBin = getBinning('electron','pt')
-    etaBin = getBinning('electron','eta')
+    ptBin = getBinning('charge','pt')
+    etaBin = getBinning('charge','eta')
 
-    ptVar = 'z2_pt'
-    etaVar = 'z2_eta'
+    ptVar = 'z1_pt'
+    etaVar = 'z1_abseta'
+    #ptVar = 'z2_pt'
+    #etaVar = 'z2_abseta'
+
 
     binning = {}
     for pb in range(len(ptBin[:-1])):
@@ -237,6 +240,7 @@ def runfit(args):
     fout.mkdir(directory).cd()
 
     idArgs = {
+        'OppositeSign' : {'condition': ['channel=="ee"'], 'variable': 'z1_charge!=z2_charge', 'fitVars': ['std::string channel','int z1_charge','int z2_charge']},
         'SameSign' : {'condition': ['channel=="ee"'], 'variable': 'z1_charge==z2_charge', 'fitVars': ['std::string channel','int z1_charge','int z2_charge']},
     }
 

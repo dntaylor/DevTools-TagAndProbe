@@ -51,4 +51,9 @@ def getBinning(obj,var,trig=False,threshold=20):
         if var=='eta':
             #return [-2.5, -2.0, -1.479, -0.8, 0., 0.8, 1.479, 2.0, 2.5]
             return [-2.5, -2.0, -1.57, -1.4442, -0.8, 0., 0.8, 1.4442, 1.57, 2.0, 2.5]
+    if obj=='charge':
+        if var=='pt':
+            return [10, 20, 30, 40, 50, 100, 200, 500, 6500]
+        if var=='eta':
+            return [0., 0.8, 1.479, 2.0, 2.5]
     return []

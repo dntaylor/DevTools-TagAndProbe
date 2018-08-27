@@ -121,6 +121,8 @@ def plot(args):
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, True if 'Hpp' in args.idName else 0., var)
         elif 'SameSign' in args.idName:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, "ee", 1, 1, var)
+        elif 'OppositeSign' in args.idName:
+            eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, "ee", 1, -1, var)
         else:
             eff = lambda pt, eta, var : getattr(ROOT, args.idName)(pt, eta, True, var)
     
@@ -151,6 +153,7 @@ def plot(args):
     def eyhMC_eta(eta) : return array.array('d', map(lambda pt : effMC(pt, eta)-effMCErr(pt, eta), xbins))
 
     canvas = ROOT.TCanvas()
+    canvas.SetLogx(True)
     mg = ROOT.TMultiGraph('alletaBins', ';Probe p_{T};Scale Factor')
     mgData = ROOT.TMultiGraph('alletaBinsData', ';Probe p_{T};Data Efficiency')
     mgMC = ROOT.TMultiGraph('alletaBinsMC', ';Probe p_{T};MC Efficiency')
@@ -232,6 +235,7 @@ def plot(args):
     def eyhMC_pt(pt) : return array.array('d', map(lambda eta : effMC(pt, eta)-effMCErr(pt, eta), xbins))
 
     canvas = ROOT.TCanvas()
+    canvas.SetLogx(False)
     mg = ROOT.TMultiGraph('allptBins', ';Probe #eta;Scale Factor')
     mgData = ROOT.TMultiGraph('allptBinsData', ';Probe #eta;Data Efficiency')
     mgMC = ROOT.TMultiGraph('allptBinsMC', ';Probe #eta;MC Efficiency')
@@ -403,7 +407,7 @@ def plot(args):
 def parse_command_line(argv):
     parser = argparse.ArgumentParser(description='TagAndProbe Plotter')
 
-    parser.add_argument('object', type=str, choices=['electron','muon','photon'], help='Physics object')
+    parser.add_argument('object', type=str, choices=['electron','muon','photon','charge'], help='Physics object')
     parser.add_argument('output', type=str, help='Directory for output')
     parser.add_argument('idName', type=str, help='Name of ID')
     parser.add_argument('idNameNice', type=str, help='Name of ID for printing')

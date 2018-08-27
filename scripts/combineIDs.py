@@ -14,7 +14,7 @@ def combineScaleFactors(obj):
         idfile = ROOT.TFile(fname)
         sf = idfile.Get('scalefactor').Clone()
         em = idfile.Get('effMC').Clone()
-        ed = idfile.Get('effMC').Clone()
+        ed = idfile.Get('effData').Clone()
         outfile.cd()
         sf.SetName(idname)
         sf.SetTitle(idname)
@@ -31,9 +31,10 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    combineScaleFactors('muon')
-    combineScaleFactors('electron')
-    combineScaleFactors('photon')
+    #combineScaleFactors('muon')
+    #combineScaleFactors('electron')
+    #combineScaleFactors('photon')
+    combineScaleFactors('charge')
 
 
 if __name__ == "__main__":
